@@ -1,0 +1,13 @@
+{
+  "serial_port": "/dev/ttyUSB0",
+  "timezone": "Europe/Moscow",
+  "loglevel": "info",
+  "mqtt": {
+    "host": "127.0.0.1",
+    "port": 1883
+  },
+  "device_config": {
+    "templates": "./templates/templates.json",
+    "devices": "./example/devices.json"
+  }
+}

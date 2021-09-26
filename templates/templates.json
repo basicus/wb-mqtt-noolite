@@ -1,0 +1,61 @@
+{
+  "templates": [
+    {
+      "name": "srf-1-3000-t",
+      "controls": [
+        {
+          "name": "on",
+          "type": "switch",
+          "order": 1,
+          "initial_value": "0",
+          "readonly": false,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": "SetSwitch"
+        },
+        {
+          "name": "status",
+          "type": "switch",
+          "order": 6,
+          "initial_value": "0",
+          "readonly": true
+        },
+        {
+          "name": "setting",
+          "type": "range",
+          "order": 2,
+          "min": 5,
+          "max": 30,
+          "initial_value": "23",
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": "SetTemperature"
+        },
+        {
+          "name": "value",
+          "type": "temperature",
+          "order": 3,
+          "readonly": true,
+          "initial_value": "",
+          "onstart_command": "",
+          "get_command": "ReadState 0",
+          "set_command": "",
+          "polling": true,
+          "polling_cron": "*/1 * * * *"
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "order": 4,
+          "readonly": true
+        },
+        {
+          "name": "address",
+          "type": "text",
+          "order": 5,
+          "readonly": true
+        }
+      ]
+    }
+  ]
+}
