@@ -1,6 +1,7 @@
 package device
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
@@ -25,7 +26,7 @@ func NewPublishQueue(mqtt *mqtt.Connector, log *logrus.Logger, config *config.Co
 func (q *PublishQueue) Enqueue(device *Device) {
 	q.lock.Lock()
 	defer q.lock.Unlock()
-	deviceId := string(device.Ch) + "_" + device.Type.String() + "_" + device.Template + "_" + device.Address
+	deviceId := fmt.Sprintf("%d", device.Ch) + "_" + device.Type.String() + "_" + device.Template + "_" + device.Address
 	_, ok := q.queue[deviceId]
 	if ok {
 		return
