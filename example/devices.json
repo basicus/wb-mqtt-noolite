@@ -4,11 +4,5 @@
     "noolite_type": "txf",
     "ch": 1,
     "template": "srf-1-3000-t"
-  },
-  {
-    "name": "Теплый пол 2",
-    "noolite_type": "txf",
-    "ch": 2,
-    "template": "srf-1-3000-t"
   }
 ]

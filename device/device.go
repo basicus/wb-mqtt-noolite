@@ -16,6 +16,7 @@ type Device struct {
 	Address  string `json:"address"`
 	Template string `json:"template"`
 	Controls []*Control
+	sentOnce bool
 }
 
 // UpdateDeviceStatus Обновить органы управления
@@ -28,8 +29,9 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 	switch v := ds.(type) {
 	case *noolite.DeviceMainStatus:
 		for _, control := range d.Controls {
+			oldValue := control.Value
 			switch control.Name {
-			case "status":
+			case ControlStatus:
 				if v.GetOn() {
 					control.Value = MQTTSwitchOn
 					updated++
@@ -37,16 +39,22 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 					control.Value = MQTTSwitchOff
 					updated++
 				}
-			case "value":
+			case ControlValue:
 				control.Value = v.GetValue()
 				updated++
-			case "address":
+			case ControlAddress:
 				control.Value = v.GetAddress()
 				updated++
-			case "model":
+			case ControlModel:
 				control.Value = v.GetDeviceModel()
 				updated++
 			}
+			if control.Value == oldValue {
+				control.notUpdated = true
+			} else {
+				control.notUpdated = false
+			}
+
 		}
 	default:
 		panic("Cant update unknown type")
@@ -68,113 +76,125 @@ func (d *Device) FindControl(name string) *Control {
 }
 
 // GenerateMQTTPacket Подготовить топики к публикации
-func (d *Device) GenerateMQTTPacket(prefix string) mqtt.Packet {
-	var topics mqtt.Packet
+func (d *Device) GenerateMQTTPacket(prefix string) *mqtt.Packet {
+	topics := mqtt.NewPacket()
 
 	var deviceId = prefix + d.Type.String() + "_" + fmt.Sprintf("%d", d.Ch) + "/"
-	if d.Name != "" {
-		topics.Add(mqtt.Message{
-			Topic:   deviceId + "meta/name",
-			Retain:  true,
-			Payload: d.Name,
-		})
+	if !d.sentOnce {
+		if d.Name != "" {
+			topics.Add(&mqtt.Message{
+				Topic:   deviceId + "meta/name",
+				Retain:  true,
+				Payload: d.Name,
+			})
+		}
+		if d.Address != "" {
+			topics.Add(&mqtt.Message{
+				Topic:   deviceId + "meta/address",
+				Retain:  true,
+				Payload: d.Address,
+			})
+		}
+		d.sentOnce = true
 	}
 
 	if d.Error != "" {
 		if d.Error == "ok" {
 			d.Error = ""
 		}
-		topics.Add(mqtt.Message{
+		topics.Add(&mqtt.Message{
 			Topic:   deviceId + "meta/error",
 			Retain:  false,
 			Payload: d.Error,
 		})
 	}
-	if d.Address != "" {
-		topics.Add(mqtt.Message{
-			Topic:   deviceId + "meta/address",
-			Retain:  true,
-			Payload: d.Address,
-		})
-	}
+
 	if d.Error == "" {
 		for _, control := range d.Controls {
 			if control.Readonly || !control.sentOnce {
-				if !control.sentOnce {
-					control.sentOnce = true
-				}
 				//Main section
 				controlPrefix := deviceId + "controls/" + control.Name
-				topics.Add(mqtt.Message{
-					Topic:   controlPrefix,
-					Retain:  true,
-					Payload: control.Value,
-				})
-				// Meta section
-				if control.Type != "" {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/type",
-						Retain:  true,
-						Payload: control.Type.String(),
-					})
-				}
-				if control.Order != 0 {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/order",
-						Retain:  true,
-						Payload: strconv.Itoa(control.Order),
-					})
-				}
 
-				if control.Min != 0 {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/min",
-						Retain:  true,
-						Payload: strconv.Itoa(control.Min),
-					})
-				}
-
-				if control.Max != 0 {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/max",
-						Retain:  true,
-						Payload: strconv.Itoa(control.Max),
-					})
-				}
 				if control.Error != "" {
-					topics.Add(mqtt.Message{
+					topics.Add(&mqtt.Message{
 						Topic:   controlPrefix + "/meta/error",
 						Retain:  false,
 						Payload: control.Error,
 					})
 				}
-				if control.Units != "" {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/units",
+
+				if !control.notUpdated || control.Name == ControlValue {
+					topics.Add(&mqtt.Message{
+						Topic:   controlPrefix,
 						Retain:  true,
-						Payload: control.Units,
-					})
-				}
-				if control.Precision != "" {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/precision",
-						Retain:  true,
-						Payload: control.Precision,
+						Payload: control.Value,
 					})
 				}
 
-				if control.Readonly {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/readonly",
-						Retain:  true,
-						Payload: "1",
-					})
-				} else {
-					topics.Add(mqtt.Message{
-						Topic:   controlPrefix + "/meta/readonly",
-						Retain:  true,
-						Payload: "0",
-					})
+				if !control.sentOnce {
+					// Meta section
+					if control.Type != "" {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/type",
+							Retain:  true,
+							Payload: control.Type.String(),
+						})
+					}
+					if control.Order != 0 {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/order",
+							Retain:  true,
+							Payload: strconv.Itoa(control.Order),
+						})
+					}
+
+					if control.Min != 0 {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/min",
+							Retain:  true,
+							Payload: strconv.Itoa(control.Min),
+						})
+					}
+
+					if control.Max != 0 {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/max",
+							Retain:  true,
+							Payload: strconv.Itoa(control.Max),
+						})
+					}
+					if control.Units != "" {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/units",
+							Retain:  true,
+							Payload: control.Units,
+						})
+					}
+					if control.Precision != "" {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/precision",
+							Retain:  true,
+							Payload: control.Precision,
+						})
+					}
+
+					if control.Readonly {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/readonly",
+							Retain:  true,
+							Payload: "1",
+						})
+					} else {
+						topics.Add(&mqtt.Message{
+							Topic:   controlPrefix + "/meta/readonly",
+							Retain:  true,
+							Payload: "0",
+						})
+					}
+				}
+
+				if !control.sentOnce {
+					control.sentOnce = true
 				}
 			}
 		}

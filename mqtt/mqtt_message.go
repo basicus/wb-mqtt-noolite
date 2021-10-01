@@ -9,17 +9,17 @@ type Message struct {
 
 // Packet Пакет сообщений
 type Packet struct {
-	messages []Message
+	messages []*Message
 }
 
 // NewPacket Формирование нового пакета из сообщений
-func NewPacket(messages ...Message) *Packet {
+func NewPacket(messages ...*Message) *Packet {
 	return &Packet{
 		messages: messages,
 	}
 }
 
 // Add Добавление сообщения в пакет
-func (p *Packet) Add(m Message) {
+func (p *Packet) Add(m *Message) {
 	p.messages = append(p.messages, m)
 }

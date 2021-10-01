@@ -55,7 +55,7 @@ func (l *List) InitNoolite(service *noolite.Service) {
 				if err == nil && device != nil {
 					//Found device state for device. Publish it state
 					if device.UpdateDeviceStatus(deviceState) {
-						l.log.Tracef("Updating contols. Enqueue it for update")
+						l.log.Tracef("Updating controls. Enqueue it for update")
 						l.publishQueue.Enqueue(device)
 					}
 				}
@@ -229,6 +229,7 @@ func (l *List) InitDeviceScheduler() error {
 	}
 
 	l.log.Infof("Scheduled %d jobs", len(l.cron.Jobs()))
+	l.cron.SingletonMode()
 	l.cron.StartAsync()
 	l.log.Infof("Crontab jobs started")
 	return nil

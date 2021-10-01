@@ -40,6 +40,7 @@ type Control struct {
 	Polling     bool   `json:"polling"`
 	PollingCron string `json:"polling_cron"`
 	sentOnce    bool
+	notUpdated  bool
 }
 
 // Template Правило. Описывает модель устройства и его органы управления.

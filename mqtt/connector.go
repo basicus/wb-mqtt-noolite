@@ -58,13 +58,13 @@ func (c *Connector) connectionLostHandler(client mqtt.Client, err error) {
 	c.log.Errorf("[MQTT] Connect lost: %v", err)
 }
 
-func (c *Connector) PublishPacket(packet Packet) error {
+func (c *Connector) PublishPacket(packet *Packet) error {
 	var wasError error
 	for _, message := range packet.messages {
 		token := c.client.Publish(message.Topic, 0, message.Retain, message.Payload)
 		topic := message
 		go func() {
-			<-token.Done()
+			token.Wait()
 			if token.Error() != nil {
 				wasError = token.Error()
 				c.log.Errorf("[MQTT] Publish topic error %s", token.Error())
