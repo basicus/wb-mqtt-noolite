@@ -14,13 +14,6 @@
           "set_command": "SetSwitch"
         },
         {
-          "name": "status",
-          "type": "switch",
-          "order": 6,
-          "initial_value": "0",
-          "readonly": true
-        },
-        {
           "name": "setting",
           "type": "range",
           "order": 2,
