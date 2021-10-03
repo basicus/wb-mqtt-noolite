@@ -107,11 +107,15 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 					}
 					if device != nil {
 						if control := device.FindControl(controlName); control != nil {
+							if control.Value != r.Payload {
+								control.notUpdated = false
+							}
+							control.Value = r.Payload
 							if !control.Readonly && control.SetCommand != "" {
 
 								l.log.Tracef("%+v", control)
 								command := strings.Split(control.SetCommand, " ")
-								command = append(command, r.Payload)
+								command = append(command, control.Value)
 								nooliteRequest, err := noolite.RequestMQTTCommand(device.Ch, device.Type.GetMode(), command...)
 								if err != nil {
 									l.log.Errorf("Cant create request to Noolite device")

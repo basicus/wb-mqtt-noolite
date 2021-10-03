@@ -6,7 +6,8 @@ const (
 )
 
 const (
-	ControlStatus  = "status"
+	ControlStatus  = "on"
+	ControlSetting = "setting"
 	ControlValue   = "value"
 	ControlAddress = "address"
 	ControlModel   = "model"

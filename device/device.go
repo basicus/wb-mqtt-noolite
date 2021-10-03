@@ -31,6 +31,10 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 		for _, control := range d.Controls {
 			oldValue := control.Value
 			switch control.Name {
+			case ControlSetting:
+				if !control.notUpdated {
+					updated++
+				}
 			case ControlStatus:
 				if v.GetOn() {
 					control.Value = MQTTSwitchOn
@@ -49,7 +53,7 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 				control.Value = v.GetDeviceModel()
 				updated++
 			}
-			if control.Value == oldValue {
+			if control.notUpdated && control.Value == oldValue {
 				control.notUpdated = true
 			} else {
 				control.notUpdated = false
@@ -111,7 +115,7 @@ func (d *Device) GenerateMQTTPacket(prefix string) *mqtt.Packet {
 
 	if d.Error == "" {
 		for _, control := range d.Controls {
-			if control.Readonly || !control.sentOnce {
+			if !control.sentOnce || !control.notUpdated {
 				//Main section
 				controlPrefix := deviceId + "controls/" + control.Name
 
