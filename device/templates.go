@@ -23,26 +23,6 @@ func (r *Templates) FindTemplateByName(name string) ([]*Control, error) {
 	return nil, ErrNoTemplateFound
 }
 
-// Control Описание органа управления устройства
-type Control struct {
-	Name        string      `json:"name"`
-	Type        ControlType `json:"type"`
-	Order       int         `json:"order"`
-	Readonly    bool        `json:"readonly"`
-	Error       string
-	Value       string `json:"initial_value"`
-	Min         int    `json:"min"`
-	Max         int    `json:"max"`
-	Units       string `json:"units"`
-	Precision   string `json:"precision"`
-	GetCommand  string `json:"get_command"`
-	SetCommand  string `json:"set_command"`
-	Polling     bool   `json:"polling"`
-	PollingCron string `json:"polling_cron"`
-	sentOnce    bool
-	notUpdated  bool
-}
-
 // Template Правило. Описывает модель устройства и его органы управления.
 type Template struct {
 	Name     string     `json:"name,omitempty"`

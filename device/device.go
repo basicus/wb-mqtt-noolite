@@ -2,7 +2,6 @@ package device
 
 import (
 	"fmt"
-	"strconv"
 	"wb-noolite-mtrf/mqtt"
 	"wb-noolite-mtrf/noolite"
 )
@@ -29,12 +28,8 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 	switch v := ds.(type) {
 	case *noolite.DeviceMainStatus:
 		for _, control := range d.Controls {
-			oldValue := control.Value
 			switch control.Name {
 			case ControlSetting:
-				if !control.notUpdated {
-					updated++
-				}
 			case ControlStatus:
 				if v.GetOn() {
 					control.Value = MQTTSwitchOn
@@ -53,12 +48,6 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 				control.Value = v.GetDeviceModel()
 				updated++
 			}
-			if control.notUpdated && control.Value == oldValue {
-				control.notUpdated = true
-			} else {
-				control.notUpdated = false
-			}
-
 		}
 	default:
 		panic("Cant update unknown type")
@@ -83,7 +72,7 @@ func (d *Device) FindControl(name string) *Control {
 func (d *Device) GenerateMQTTPacket(prefix string) *mqtt.Packet {
 	topics := mqtt.NewPacket()
 
-	var deviceId = prefix + d.Type.String() + "_" + fmt.Sprintf("%d", d.Ch) + "/"
+	var deviceId = d.GetDeviceId(prefix)
 	if !d.sentOnce {
 		if d.Name != "" {
 			topics.Add(&mqtt.Message{
@@ -115,93 +104,14 @@ func (d *Device) GenerateMQTTPacket(prefix string) *mqtt.Packet {
 
 	if d.Error == "" {
 		for _, control := range d.Controls {
-			if !control.sentOnce || !control.notUpdated {
-				//Main section
-				controlPrefix := deviceId + "controls/" + control.Name
-
-				if control.Error != "" {
-					topics.Add(&mqtt.Message{
-						Topic:   controlPrefix + "/meta/error",
-						Retain:  false,
-						Payload: control.Error,
-					})
-				}
-
-				if !control.notUpdated || control.Name == ControlValue {
-					topics.Add(&mqtt.Message{
-						Topic:   controlPrefix,
-						Retain:  true,
-						Payload: control.Value,
-					})
-				}
-
-				if !control.sentOnce {
-					// Meta section
-					if control.Type != "" {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/type",
-							Retain:  true,
-							Payload: control.Type.String(),
-						})
-					}
-					if control.Order != 0 {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/order",
-							Retain:  true,
-							Payload: strconv.Itoa(control.Order),
-						})
-					}
-
-					if control.Min != 0 {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/min",
-							Retain:  true,
-							Payload: strconv.Itoa(control.Min),
-						})
-					}
-
-					if control.Max != 0 {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/max",
-							Retain:  true,
-							Payload: strconv.Itoa(control.Max),
-						})
-					}
-					if control.Units != "" {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/units",
-							Retain:  true,
-							Payload: control.Units,
-						})
-					}
-					if control.Precision != "" {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/precision",
-							Retain:  true,
-							Payload: control.Precision,
-						})
-					}
-
-					if control.Readonly {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/readonly",
-							Retain:  true,
-							Payload: "1",
-						})
-					} else {
-						topics.Add(&mqtt.Message{
-							Topic:   controlPrefix + "/meta/readonly",
-							Retain:  true,
-							Payload: "0",
-						})
-					}
-				}
-
-				if !control.sentOnce {
-					control.sentOnce = true
-				}
-			}
+			controlPrefix := control.GetControlPrefix(deviceId)
+			topics.Add(control.GenerateMQTTPacket(controlPrefix)...)
 		}
 	}
 	return topics
+}
+
+func (d *Device) GetDeviceId(prefix string) string {
+	return prefix + d.Type.String() + "_" + fmt.Sprintf("%d", d.Ch) + "/"
+
 }

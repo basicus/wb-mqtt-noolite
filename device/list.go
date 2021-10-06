@@ -107,9 +107,6 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 					}
 					if device != nil {
 						if control := device.FindControl(controlName); control != nil {
-							if control.Value != r.Payload {
-								control.notUpdated = false
-							}
 							control.Value = r.Payload
 							if !control.Readonly && control.SetCommand != "" {
 
@@ -123,6 +120,11 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 								} else {
 									l.log.Tracef("Received command. Send it to Noolite device")
 									l.noolite.Send() <- nooliteRequest
+									mqttPacket := control.GenerateMQTTPacket(control.GetControlPrefix(device.GetDeviceId(l.config.Mqtt.DevicePrefix)))
+									err := l.mqtt.PublishPacket(mqtt.NewPacket(mqttPacket...))
+									if err != nil {
+										continue
+									}
 								}
 							}
 

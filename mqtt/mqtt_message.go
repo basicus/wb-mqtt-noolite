@@ -20,6 +20,6 @@ func NewPacket(messages ...*Message) *Packet {
 }
 
 // Add Добавление сообщения в пакет
-func (p *Packet) Add(m *Message) {
-	p.messages = append(p.messages, m)
+func (p *Packet) Add(m ...*Message) {
+	p.messages = append(p.messages, m...)
 }
