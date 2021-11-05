@@ -68,7 +68,7 @@ func main() {
 	case "status_output":
 		commandRequest = nl.RequestReadStatOutputLoad(ch)
 	case "thermostat_mode":
-		commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualFloorSensor)
+		commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualAirSensor)
 	default:
 		pflag.Usage()
 		return
