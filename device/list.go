@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-co-op/gocron"
+	"github.com/jinzhu/copier"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
@@ -96,6 +97,7 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 					address := found[0][2]
 					controlName := found[0][3]
 
+					l.log.Tracef("Searching device by channel/address %s control name %s", address, controlName)
 					var device *Device
 					device, err := l.FindByAddress(address)
 					if err != nil {
@@ -105,12 +107,13 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 						}
 						device, _ = l.FindByChannel(uint8(ch))
 					}
+					l.log.Tracef("Found device: %+v", device)
 					if device != nil {
 						if control := device.FindControl(controlName); control != nil {
 							control.Value = r.Payload
 							if !control.Readonly && control.SetCommand != "" {
 
-								l.log.Tracef("%+v", control)
+								l.log.Tracef("Found control: %+v", control)
 								command := strings.Split(control.SetCommand, " ")
 								command = append(command, control.Value)
 								nooliteRequest, err := noolite.RequestMQTTCommand(device.Ch, device.Type.GetMode(), command...)
@@ -199,7 +202,13 @@ func (l *List) InitDeviceTemplates() error {
 		if err != nil {
 			return err
 		}
-		device.Controls = controls
+		var cp []*Control
+		for _, c := range controls {
+			newControl := &Control{}
+			copier.Copy(newControl, c)
+			cp = append(cp, newControl)
+		}
+		device.Controls = cp
 	}
 	return nil
 }
@@ -222,7 +231,9 @@ func (l *List) InitDeviceScheduler() error {
 						l.log.Infof("Apply crontab for device %d ch control %s %s crontab: %s", device.Ch, device.Template, control.Name, control.PollingCron)
 
 						_, err := l.cron.Cron(control.PollingCron).Do(func() {
-							l.log.Tracef("Starting crontab for device %d ch control %s %s", device.Ch, device.Template, control.Name)
+							d := device
+							c := control
+							l.log.Tracef("Starting crontab for device %d ch control %s %s", d.Ch, d.Template, c.Name)
 							l.noolite.Send() <- nooliteRequest
 						})
 						if err != nil {
