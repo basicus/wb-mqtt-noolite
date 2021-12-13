@@ -152,6 +152,27 @@ func (r *Response) GetDeviceState() StatusType {
 			return nil
 		}
 
+	} else if r.CheckCRC() && r.Mode == ModeNooliteRX && r.Ctr == CtrResponseSuccess && r.Cmd == CmdSensTempHumi {
+		switch r.Fmt {
+		case FmtSensTempHumi:
+			humidity := r.D2
+			var temperature float32
+
+			var temp uint16
+
+			temp = ((uint16(r.D1) & 0x0F) << 8) + uint16(r.D0)
+			if temp > 0x7ff {
+				temp = temp - 0x1000
+			}
+
+			temperature = float32(temp) * 0.1
+
+			deviceMainStatus := NewPT111StatusStatus(0, temperature, humidity, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
+			return deviceMainStatus
+
+		default:
+			return nil
+		}
 	}
 	return nil
 }

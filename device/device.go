@@ -49,6 +49,23 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 				updated++
 			}
 		}
+	case *noolite.PT111Status:
+		for _, control := range d.Controls {
+			switch control.Name {
+			case ControlHumidity:
+				control.Value = v.GetValue2()
+				updated++
+			case ControlTemperature:
+				control.Value = v.GetValue()
+				updated++
+			case ControlAddress:
+				control.Value = v.GetAddress()
+				updated++
+			case ControlModel:
+				control.Value = v.GetDeviceModel()
+				updated++
+			}
+		}
 	default:
 		panic("Cant update unknown type")
 	}

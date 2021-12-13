@@ -23,7 +23,10 @@ func NewDeviceModel(modelId uint8) DeviceModel {
 		model = "srf-1-3000t" // терморегулятор SRF-1-3000-T
 	case 7:
 		model = "srf-1-1000r" // блок роллет SRF-1-1000-R
-
+	case 254:
+		model = "pt111" // Датчик PT111
+	default:
+		model = "unknown"
 	}
 	return model
 }

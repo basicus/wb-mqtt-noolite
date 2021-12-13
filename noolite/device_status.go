@@ -8,6 +8,8 @@ type StatusType interface {
 	String() string
 	// GetValue Получение текущего значения Мощности, температуры текущего датчика
 	GetValue() string
+	// GetValue2 string Второе значение Влажность, например
+	GetValue2() string
 	// GetFwVersion Получение версии прошивки
 	GetFwVersion() string
 	// GetDeviceModel Получить модель устройства
@@ -47,6 +49,10 @@ func (ds *DeviceMainStatus) String() string {
 func (ds *DeviceMainStatus) GetValue() string {
 	return fmt.Sprintf("%d", ds.Value)
 
+}
+
+func (ds *DeviceMainStatus) GetValue2() string {
+	return ""
 }
 
 func (ds *DeviceMainStatus) GetFwVersion() string {

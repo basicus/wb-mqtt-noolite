@@ -78,6 +78,8 @@ const (
 	DeviceSRF3000T uint8 = 6
 	// DeviceSRF1000R блок роллет SRF-1-1000-R
 	DeviceSRF1000R uint8 = 7
+	// DevicePT111 датчик температуры и влажности
+	DevicePT111 uint8 = 254
 )
 
 // Команды
@@ -170,5 +172,7 @@ const (
 	// FmtSettings Настройки блока (rw)
 	FmtSettings uint8 = 16
 	// FmtExternalLoadInfo Получение данных с выхода для нагрузки устройства
-	FmtExternalLoadInfo = 19
+	FmtExternalLoadInfo uint8 = 19
+	// FmtSensTempHumi Данные в формате температура и влажность
+	FmtSensTempHumi uint8 = 7
 )

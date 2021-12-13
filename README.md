@@ -9,14 +9,24 @@ _Работа службы протестирована с адаптером [M
 * Взаимодействие с адаптером NooLite MTRF-64, обработка ответов от устройств и публикация обновления статусов в MQTT.
 * Опрос устройств Noolite(-F) по расписанию и отправка результатов в Wiren Board
 
-### Сборка под Wirenboard (armv5tejl) 
+### Сборка под Wirenboard 
 
+#### Wirenboard 3.5 
 ```shell
 # armv5tejl
 export GOARCH=arm
 export GOARM=5
-go build -ldflags="-s -w" -o wb-mqtt-noolite-arm ../main.go
+go build -ldflags="-s -w" -o wb-mqtt-noolite-arm main.go
 ```
+
+#### Wirenboard 6
+```shell
+#  Cortex A7
+export GOARCH=arm
+export GOARM=7
+go build -ldflags="-s -w" -o wb-mqtt-noolite-armv7 main.go
+```
+
 
 ## Конфигурирование и запуск службы
 Служба wb-mqtt-noolite конфигурируется с помощью конфигурационного файла в json формате. 

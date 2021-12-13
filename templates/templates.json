@@ -49,6 +49,37 @@
           "readonly": true
         }
       ]
+    },
+    {
+      "name": "pt111",
+      "controls": [
+        {
+          "name": "temperature",
+          "type": "temperature",
+          "order": 1,
+          "readonly": true,
+          "initial_value": ""
+        },
+        {
+          "name": "humidity",
+          "type": "rel_humidity",
+          "order": 2,
+          "readonly": true,
+          "initial_value": ""
+        },
+        {
+          "name": "model",
+          "type": "text",
+          "order": 4,
+          "readonly": true
+        },
+        {
+          "name": "address",
+          "type": "text",
+          "order": 5,
+          "readonly": true
+        }
+      ]
     }
   ]
 }

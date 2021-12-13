@@ -4,5 +4,11 @@
     "noolite_type": "txf",
     "ch": 1,
     "template": "srf-1-3000-t"
+  },
+  {
+    "name": "Комната",
+    "noolite_type": "rx",
+    "ch": 4,
+    "template": "pt111"
   }
 ]

@@ -6,9 +6,11 @@ const (
 )
 
 const (
-	ControlStatus  = "on"
-	ControlSetting = "setting"
-	ControlValue   = "value"
-	ControlAddress = "address"
-	ControlModel   = "model"
+	ControlStatus      = "on"
+	ControlSetting     = "setting"
+	ControlValue       = "value"
+	ControlAddress     = "address"
+	ControlModel       = "model"
+	ControlTemperature = "temperature"
+	ControlHumidity    = "humidity"
 )
