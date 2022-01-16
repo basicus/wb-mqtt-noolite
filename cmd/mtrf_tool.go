@@ -18,6 +18,7 @@ func main() {
 	var mode string
 	var nooliteMode uint8
 	var temperature uint8
+	var sensor string
 
 	serviceConfig := config.Config{}
 
@@ -26,7 +27,8 @@ func main() {
 	pflag.Uint8VarP(&ch, "channel", "c", 0, "Set channel")
 	pflag.Uint8VarP(&temperature, "temperature", "t", 25, "Set temperature")
 	pflag.StringVarP(&command, "command", "", "", "Command: bind, unbind, status")
-	pflag.StringVarP(&mode, "mode", "m", "txf", "Command: txf, tx, rxf,rx")
+	pflag.StringVarP(&mode, "mode", "m", "txf", "Mode: txf, tx, rxf,rx")
+	pflag.StringVarP(&sensor, "sensor", "s", "", "Sensor: air, floor. Default: floor")
 	pflag.StringVarP(&serviceConfig.SerialPort, "device", "d", "/dev/ttyUSB0", "Specify MTRF-64-USB-A serial port")
 	pflag.Parse()
 
@@ -68,7 +70,12 @@ func main() {
 	case "status_output":
 		commandRequest = nl.RequestReadStatOutputLoad(ch)
 	case "thermostat_mode":
-		commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualAirSensor)
+		switch sensor {
+		case "air":
+			commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualAirSensor)
+		default:
+			commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualFloorSensor)
+		}
 	default:
 		pflag.Usage()
 		return
