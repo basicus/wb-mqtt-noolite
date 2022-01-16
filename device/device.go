@@ -66,6 +66,36 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 				updated++
 			}
 		}
+	case *noolite.BinarySensorStatus:
+		for _, control := range d.Controls {
+			switch control.Name {
+			case ControlStatus:
+				if v.GetOn() {
+					control.Value = MQTTSwitchOn
+					updated++
+				} else {
+					control.Value = MQTTSwitchOff
+					updated++
+				}
+			case ControlAddress:
+				control.Value = v.GetAddress()
+				updated++
+			}
+		}
+	case *noolite.BatteryLowStatus:
+		for _, control := range d.Controls {
+			switch control.Name {
+			case ControlBatteryLow:
+				if v.GetOn() {
+					control.Value = MQTTSwitchOn
+					updated++
+				} else {
+					control.Value = MQTTSwitchOff
+					updated++
+				}
+			}
+		}
+
 	default:
 		panic("Cant update unknown type")
 	}

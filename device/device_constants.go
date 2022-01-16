@@ -13,4 +13,5 @@ const (
 	ControlModel       = "model"
 	ControlTemperature = "temperature"
 	ControlHumidity    = "humidity"
+	ControlBatteryLow  = "low_battery"
 )

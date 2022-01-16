@@ -109,3 +109,22 @@ func TestResponse_PT111GetState2(t *testing.T) {
 	assert.Equal(t, deviceState.GetValue2(), "45")
 
 }
+
+func TestResponse_BinarySensor1(t *testing.T) {
+	buf := [17]byte{173, 1, 0, 6, 4, 21, 7, 9, 33, 45, 255, 0, 0, 149, 241, 176, 174}
+
+	response := Response{}
+
+	err := response.Parse(buf[:])
+	if err != nil {
+		return
+	}
+
+	deviceState := response.GetDeviceState()
+	if err != nil {
+		return
+	}
+	assert.NoError(t, err)
+	assert.NotNil(t, deviceState)
+
+}

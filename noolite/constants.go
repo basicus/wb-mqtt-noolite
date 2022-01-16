@@ -80,6 +80,12 @@ const (
 	DeviceSRF1000R uint8 = 7
 	// DevicePT111 датчик температуры и влажности
 	DevicePT111 uint8 = 254
+	// DeviceDS1 датчик открытия двери/окна
+	DeviceDS1 uint8 = 253
+	// DeviceWS1 датчик протечки
+	DeviceWS1 uint8 = 252
+	// DeviceBatteryLow Разряжена батарея
+	DeviceBatteryLow uint8 = 251
 )
 
 // Команды
