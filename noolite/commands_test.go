@@ -24,3 +24,9 @@ func TestDeviceSettingsSetData(t *testing.T) {
 	assert.EqualValues(t, s1, s2)
 
 }
+
+func TestNewRequestSetPowerOnState(t *testing.T) {
+	powerOnState := NewRequestSetPowerOnState(1, PowerOnModeLast)
+
+	assert.NotNil(t, powerOnState, "PowerOnState nil")
+}

@@ -168,6 +168,13 @@ const (
 	ModeCalendarAirSensor uint8 = 8
 )
 
+// Режим работы устройства после подачи питания
+const (
+	PowerOnModeOff  uint8 = 1
+	PowerOnModeOn   uint8 = 2
+	PowerOnModeLast uint8 = 3
+)
+
 const (
 	// FmtMain Основная информация о блоке (ro)
 	FmtMain uint8 = 0

@@ -19,6 +19,7 @@ func main() {
 	var nooliteMode uint8
 	var temperature uint8
 	var sensor string
+	var ponState string
 
 	serviceConfig := config.Config{}
 
@@ -26,10 +27,12 @@ func main() {
 	pflag.BoolVarP(&showHelp, "help", "", false, "Show help message")
 	pflag.Uint8VarP(&ch, "channel", "c", 0, "Set channel")
 	pflag.Uint8VarP(&temperature, "temperature", "t", 25, "Set temperature")
-	pflag.StringVarP(&command, "command", "", "", "Command: bind, unbind, status")
+	pflag.StringVarP(&command, "command", "", "", "Command: bind, unbind, on, off, status, poweron_state, thermostat_mode, temperature")
 	pflag.StringVarP(&mode, "mode", "m", "txf", "Mode: txf, tx, rxf,rx")
 	pflag.StringVarP(&sensor, "sensor", "s", "", "Sensor: air, floor. Default: floor")
+	pflag.StringVarP(&sensor, "state", "", "", "Power On state: on, off, last")
 	pflag.StringVarP(&serviceConfig.SerialPort, "device", "d", "/dev/ttyUSB0", "Specify MTRF-64-USB-A serial port")
+
 	pflag.Parse()
 
 	// Show help
@@ -75,6 +78,15 @@ func main() {
 			commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualAirSensor)
 		default:
 			commandRequest = nl.RequestSetThermostatMode(ch, nl.ModeManualFloorSensor)
+		}
+	case "poweron_state":
+		switch ponState {
+		case "on":
+			commandRequest = nl.NewRequestSetPowerOnState(ch, nl.PowerOnModeOn)
+		case "last":
+			commandRequest = nl.NewRequestSetPowerOnState(ch, nl.PowerOnModeLast)
+		default:
+			commandRequest = nl.NewRequestSetPowerOnState(ch, nl.PowerOnModeOff)
 		}
 	default:
 		pflag.Usage()

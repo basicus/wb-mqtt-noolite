@@ -144,6 +144,32 @@ func RequestSetThermostatMode(ch uint8, mode uint8) *Request {
 	}
 }
 
+// NewRequestSetPowerOnState Установка режима работы термостата после подачи питания
+func NewRequestSetPowerOnState(ch uint8, mode uint8) *Request {
+	const powerOnBit = 5
+	const saveLastStateBit = 0
+	var settings uint8 = 0
+	var mask uint8 = 0
+	switch mode {
+	case PowerOnModeOn:
+		settings |= 1 << powerOnBit
+		mask |= 1 << powerOnBit
+	case PowerOnModeLast:
+		settings |= 1 << saveLastStateBit
+		mask |= 1 << saveLastStateBit
+	default:
+		// PowerOnModeOff
+		mask |= 1 << powerOnBit
+	}
+
+	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdWriteState, FmtSettings, [4]byte{settings, 0, mask, 0}, EmptyAddress)
+	if err != nil {
+		return nil
+	} else {
+		return rs
+	}
+}
+
 // RequestReadState Чтение состояния устройства
 func RequestReadState(ch uint8, fmt uint8) *Request {
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdReadState, fmt, [4]byte{0, 0, 0, 0}, EmptyAddress)
