@@ -30,7 +30,7 @@ func main() {
 	pflag.StringVarP(&command, "command", "", "", "Command: bind, unbind, on, off, status, poweron_state, thermostat_mode, temperature")
 	pflag.StringVarP(&mode, "mode", "m", "txf", "Mode: txf, tx, rxf,rx")
 	pflag.StringVarP(&sensor, "sensor", "s", "", "Sensor: air, floor. Default: floor")
-	pflag.StringVarP(&sensor, "state", "", "", "Power On state: on, off, last")
+	pflag.StringVarP(&ponState, "state", "", "", "Power On state: on, off, last")
 	pflag.StringVarP(&serviceConfig.SerialPort, "device", "d", "/dev/ttyUSB0", "Specify MTRF-64-USB-A serial port")
 
 	pflag.Parse()
