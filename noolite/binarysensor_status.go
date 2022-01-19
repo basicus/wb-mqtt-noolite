@@ -44,3 +44,6 @@ func (ds *BinarySensorStatus) GetOn() bool {
 func (ds *BinarySensorStatus) GetAddress() string {
 	return fmt.Sprintf("%02x%02x%02x%02x", ds.Address[0], ds.Address[1], ds.Address[2], ds.Address[3])
 }
+func (ds *BinarySensorStatus) GetBatteryLow() bool {
+	return false
+}

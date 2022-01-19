@@ -12,12 +12,15 @@ type PT111Status struct {
 	Humidity uint8
 	// Temperature Текущая температура
 	Temperature float32
+	// BatteryLow Батарея разряжена?
+	BatteryLow bool
 	// Адрес устройства
 	Address [4]byte
 }
 
-func NewPT111StatusStatus(fwVersion uint8, temperature float32, humidity uint8, address [4]byte) *PT111Status {
-	return &PT111Status{Type: NewDeviceModel(DevicePT111), FwVersion: fwVersion, Temperature: temperature, Humidity: humidity, Address: address}
+func NewPT111StatusStatus(sensorType uint8, fwVersion uint8, temperature float32, humidity uint8, batteryLow bool, address [4]byte) *PT111Status {
+	return &PT111Status{Type: NewDeviceModel(sensorType), FwVersion: fwVersion, Temperature: temperature,
+		Humidity: humidity, BatteryLow: batteryLow, Address: address}
 }
 
 func (ds *PT111Status) String() string {
@@ -47,4 +50,8 @@ func (ds *PT111Status) GetOn() bool {
 
 func (ds *PT111Status) GetAddress() string {
 	return fmt.Sprintf("%02x%02x%02x%02x", ds.Address[0], ds.Address[1], ds.Address[2], ds.Address[3])
+}
+
+func (ds *PT111Status) GetBatteryLow() bool {
+	return ds.BatteryLow
 }

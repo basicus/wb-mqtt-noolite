@@ -64,6 +64,14 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 			case ControlModel:
 				control.Value = v.GetDeviceModel()
 				updated++
+			case ControlBatteryLow:
+				if v.GetBatteryLow() {
+					control.Value = MQTTSwitchOn
+					updated++
+				} else {
+					control.Value = MQTTSwitchOff
+					updated++
+				}
 			}
 		}
 	case *noolite.BinarySensorStatus:
@@ -161,4 +169,8 @@ func (d *Device) GenerateMQTTPacket(prefix string) *mqtt.Packet {
 func (d *Device) GetDeviceId(prefix string) string {
 	return prefix + d.Type.String() + "_" + fmt.Sprintf("%d", d.Ch) + "/"
 
+}
+
+func (d *Device) String() string {
+	return fmt.Sprintf("ch:%d %s [%s] %s %s", d.Ch, d.Type.String(), d.Template, d.Name, d.Address)
 }

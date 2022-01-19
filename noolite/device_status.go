@@ -18,6 +18,8 @@ type StatusType interface {
 	GetOn() bool
 	// GetAddress Получение адреса устройства
 	GetAddress() string
+	// GetBatteryLow Получение статуса батареи
+	GetBatteryLow() bool
 }
 
 // DeviceMainStatus Основной статус устройства (FMT = 0)
@@ -69,4 +71,8 @@ func (ds *DeviceMainStatus) GetOn() bool {
 
 func (ds *DeviceMainStatus) GetAddress() string {
 	return fmt.Sprintf("%02x%02x%02x%02x", ds.Address[0], ds.Address[1], ds.Address[2], ds.Address[3])
+}
+
+func (ds *DeviceMainStatus) GetBatteryLow() bool {
+	return false
 }

@@ -166,10 +166,33 @@ func (r *Response) GetDeviceState() StatusType {
 				if temp > 0x7ff {
 					temp = temp - 0x1000
 				}
-
+				// Вычисление температуры
 				temperature = float32(temp) * 0.1
 
-				deviceMainStatus := NewPT111StatusStatus(0, temperature, humidity, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
+				// D1 бит 7 – состояние батареи: 1-разряжена, 0- заряд батареи в норме
+				batteryLow := (uint8(r.D1)&0x80)>>7 == 1
+
+				// бит 6..4 – тип датчика, который передал данные:
+				sensorType := (uint8(r.D1) & 0x70) >> 4
+				//000 - зарезервировано
+				//001 - датчик температуры (PT112) == 1
+				//010 - датчик температуры/влажности (PT111) ==2
+				//011 - зарезервировано
+				//100 - зарезервировано
+				//101 - зарезервировано
+				//110 - зарезервировано
+				//111 - зарезервировано
+				deviceType := DevicePT111
+				switch sensorType {
+				case 1:
+					deviceType = DevicePT112
+				case 2:
+					deviceType = DevicePT111
+				default:
+					deviceType = DevicePT112
+				}
+
+				deviceMainStatus := NewPT111StatusStatus(deviceType, 0, temperature, humidity, batteryLow, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
 				return deviceMainStatus
 
 			default:

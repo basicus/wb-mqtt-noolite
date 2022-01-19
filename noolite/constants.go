@@ -86,6 +86,8 @@ const (
 	DeviceWS1 uint8 = 252
 	// DeviceBatteryLow Разряжена батарея
 	DeviceBatteryLow uint8 = 251
+	// DevicePT112 датчик температуры
+	DevicePT112 uint8 = 250
 )
 
 // Команды

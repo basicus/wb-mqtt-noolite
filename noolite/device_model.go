@@ -25,6 +25,8 @@ func NewDeviceModel(modelId uint8) DeviceModel {
 		model = "srf-1-1000r" // блок роллет SRF-1-1000-R
 	case DevicePT111:
 		model = "pt111" // датчик температуры и влажности
+	case DevicePT112:
+		model = "pt112" // датчик температуры
 	case DeviceDS1:
 		model = "ds1" // датчик открытия окон/дверей
 	case DeviceWS1:
