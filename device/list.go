@@ -28,6 +28,7 @@ type List struct {
 	noolite      *noolite.Service
 	mqtt         *mqtt.Connector
 	topicRegex   *regexp.Regexp
+	retainRegex  *regexp.Regexp
 	cron         *gocron.Scheduler
 	publishQueue *PublishQueue
 }
@@ -84,13 +85,16 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 	go func() { // Goroutine for receive MQTT
 		for {
 			r := <-l.mqtt.Receive()
-			// 1. Фильтрация и поиск устройства
-			// 2. Найти соответствующий элемент управления
-			// 3. Проверить поддерживает ли он отправку команд. Закодировать команды
-			// 4. Отправить в очередь команд
-			// 5. Добавить шедулер, который будет выполнять команду по расписанию
-			if l.topicRegex.MatchString(r.Topic) {
-				found := l.topicRegex.FindAllStringSubmatch(r.Topic, -1)
+			newValue := l.topicRegex.MatchString(r.Topic)
+			retainValue := l.retainRegex.MatchString(r.Topic) && r.Retain
+			if newValue || retainValue {
+				var found [][]string
+				if newValue {
+					found = l.topicRegex.FindAllStringSubmatch(r.Topic, -1)
+				} else {
+					found = l.retainRegex.FindAllStringSubmatch(r.Topic, -1)
+				}
+
 				if len(found) >= 1 && len(found[0]) == 4 {
 					// 0 - all, 1 - noolite (txf, tx, rx, rxf), 2 - address or channel, 3 control
 					//nooliteMode := found[0][1]
@@ -107,30 +111,41 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 						}
 						device, _ = l.FindByChannel(uint8(ch))
 					}
-					l.log.Tracef("Found device: %+v", device)
-					if device != nil {
-						if control := device.FindControl(controlName); control != nil {
-							control.Value = r.Payload
-							if !control.Readonly && control.SetCommand != "" {
 
-								l.log.Tracef("Found control: %+v", control)
-								command := strings.Split(control.SetCommand, " ")
-								command = append(command, control.Value)
-								nooliteRequest, err := noolite.RequestMQTTCommand(device.Ch, device.Type.GetMode(), command...)
-								if err != nil {
-									l.log.Errorf("Cant create request to Noolite device")
-									continue
-								} else {
-									l.log.Tracef("Received command. Send it to Noolite device")
-									l.noolite.Send() <- nooliteRequest
-									mqttPacket := control.GenerateMQTTPacket(control.GetControlPrefix(device.GetDeviceId(l.config.Mqtt.DevicePrefix)))
-									err := l.mqtt.PublishPacket(mqtt.NewPacket(mqttPacket...))
+					if device != nil {
+						if newValue {
+							l.log.Tracef("New value for device: %+v", device)
+						} else {
+							l.log.Tracef("Retain value for device: %+v", device)
+
+						}
+						if control := device.FindControl(controlName); control != nil {
+							if r.Payload != control.Value {
+								l.log.Tracef("Received retained value for Noolite device %s control %s setting to it %s. Old value was %s", device.String(), control.Name, r.Payload, control.Value)
+							} else {
+								retainValue = false
+							}
+							if newValue || retainValue {
+								control.Value = r.Payload
+								if !control.Readonly && control.SetCommand != "" {
+									l.log.Tracef("Found control for send to Noolite device: %+v", control)
+									command := strings.Split(control.SetCommand, " ")
+									command = append(command, control.Value)
+									nooliteRequest, err := noolite.RequestMQTTCommand(device.Ch, device.Type.GetMode(), command...)
 									if err != nil {
+										l.log.Errorf("Cant create request to Noolite device")
 										continue
+									} else {
+										l.log.Tracef("Received command. Send it to Noolite device")
+										l.noolite.Send() <- nooliteRequest
+										mqttPacket := control.GenerateMQTTPacket(control.GetControlPrefix(device.GetDeviceId(l.config.Mqtt.DevicePrefix)))
+										err := l.mqtt.PublishPacket(mqtt.NewPacket(mqttPacket...))
+										if err != nil {
+											continue
+										}
 									}
 								}
 							}
-
 						}
 					}
 				}
@@ -184,11 +199,12 @@ func NewDeviceList(log *logrus.Logger, config *config.Config, path string, templ
 	}
 
 	return &List{
-		devices:    dev,
-		log:        log,
-		config:     config,
-		templates:  templates,
-		topicRegex: regexp.MustCompile(config.DevicePattern),
+		devices:     dev,
+		log:         log,
+		config:      config,
+		templates:   templates,
+		topicRegex:  regexp.MustCompile(config.DevicePattern),
+		retainRegex: regexp.MustCompile(config.RetainSettingsPattern),
 	}, nil
 }
 

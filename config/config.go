@@ -11,8 +11,9 @@ type Config struct {
 	//QueueLen Глубина очереди команд принимаемых для отправки через адаптер
 	QueueLen int `json:"queue_len,omitempty" env-default:"32"`
 	//DevicePattern Регулярное выражение с помощью которого выполняется фильтрация входящих топиков
-	DevicePattern string `json:"device_pattern,omitempty" env-default:"^/devices/mtrf_([a-z]*)_([a-zA-Z0-9]*)/controls/(\\w*)/on$"`
-	Tz            *time.Location
+	DevicePattern         string `json:"device_pattern,omitempty" env-default:"^/devices/mtrf_([a-z]*)_([a-zA-Z0-9]*)/controls/(\\w*)/on$"`
+	RetainSettingsPattern string `json:"retain_settings_pattern" env-default:"^/devices/mtrf_([a-z]*)_([a-zA-Z0-9]*)/controls/(\\w*)$"`
+	Tz                    *time.Location
 	//TimeZone Часовой пояс согласно которого описываются правила crontab
 	TimeZone string `json:"timezone,omitempty" env-default:"Europe/Moscow"`
 	//Loglevel Уровень логирования (info, debug, trace, error)
