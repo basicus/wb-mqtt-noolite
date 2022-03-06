@@ -128,3 +128,16 @@ func TestResponse_BinarySensor1(t *testing.T) {
 	assert.NotNil(t, deviceState)
 
 }
+
+func TestResponse_BindRxSensor(t *testing.T) {
+	buf := [17]byte{173, 1, 0, 49, 7, 15, 0, 0, 0, 0, 0, 0, 0, 0xd9, 0x60, 46, 174}
+	response := Response{}
+
+	err := response.Parse(buf[:])
+
+	assert.NoError(t, err)
+	assert.Equal(t, ModeNooliteRX, response.Mode)
+	assert.Equal(t, CtrResponseSuccess, response.Ctr)
+	assert.Equal(t, CmdBind, response.Cmd)
+
+}
