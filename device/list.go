@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"wb-noolite-mtrf/config"
 	"wb-noolite-mtrf/mqtt"
 	"wb-noolite-mtrf/noolite"
@@ -82,6 +83,16 @@ func (l *List) InitNoolite(service *noolite.Service) {
 func (l *List) InitMQTT(connector *mqtt.Connector) {
 	l.mqtt = connector
 	l.publishQueue = NewPublishQueue(l.mqtt, l.log, l.config)
+	go func() {
+		<-time.After(l.config.Mqtt.PublishNewDeviceDelay)
+		// Scan for Noolite TX Devices for publish to mqtt info about it
+		for _, device := range l.devices {
+			if device.Type.GetMode() == noolite.ModeNooliteTX && !device.receiveOnce {
+				l.log.Tracef("Send TX device init to MQTT: %+v", device)
+				l.publishQueue.Enqueue(device)
+			}
+		}
+	}()
 	go func() { // Goroutine for receive MQTT
 		for {
 			r := <-l.mqtt.Receive()
@@ -117,15 +128,18 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 							l.log.Tracef("New value for device: %+v", device)
 						} else {
 							l.log.Tracef("Retain value for device: %+v", device)
-
 						}
+						if !device.receiveOnce {
+							device.receiveOnce = true
+						} // Check for receive data from MQTT for this device
+
 						if control := device.FindControl(controlName); control != nil {
 							if r.Payload != control.Value {
 								l.log.Tracef("Received retained value for Noolite device %s control %s setting to it %s. Old value was %s", device.String(), control.Name, r.Payload, control.Value)
 							} else {
 								retainValue = false
 							}
-							if newValue || retainValue {
+							if (newValue || retainValue) && !control.dontUseRetain {
 								control.Value = r.Payload
 								if !control.Readonly && control.SetCommand != "" {
 									l.log.Tracef("Found control for send to Noolite device: %+v", control)
@@ -245,11 +259,10 @@ func (l *List) InitDeviceScheduler() error {
 						continue
 					} else {
 						l.log.Infof("Apply crontab for device %d ch control %s %s crontab: %s", device.Ch, device.Template, control.Name, control.PollingCron)
-
+						d := *device
+						c := *control
 						_, err := l.cron.Cron(control.PollingCron).Do(func() {
-							d := device
-							c := control
-							l.log.Tracef("Starting crontab for device %d ch control %s %s", d.Ch, d.Template, c.Name)
+							l.log.Tracef("Starting crontab for channel %d control %s %s", d.Ch, d.Template, c.Name)
 							l.noolite.Send() <- nooliteRequest
 						})
 						if err != nil {

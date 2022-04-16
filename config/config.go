@@ -47,4 +47,6 @@ type MQTTConfig struct {
 	ClientName string `json:"client_name,omitempty" env-default:"wb-mqtt-noolite"`
 	// PublishDelay время на которое откладывается публикация топиков устройства, защита от множественных отправок топиков по одному и тому же устройству
 	PublishDelay time.Duration `json:"publish_delay,omitempty" env-default:"100ms"`
+	// PublishNewDeviceDelay время ожидания всех retain значений из MQTT прежде чем отправить информацию о новом устройстве
+	PublishNewDeviceDelay time.Duration `json:"publish_new_device_delay,omitempty" env-default:"10s"`
 }

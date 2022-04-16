@@ -8,14 +8,15 @@ import (
 
 // Device Описание устройства с которым будем работать
 type Device struct {
-	Type     NooliteDeviceType `json:"noolite_type"`
-	Error    string
-	Ch       uint8  `json:"ch"`
-	Name     string `json:"name"`
-	Address  string `json:"address"`
-	Template string `json:"template"`
-	Controls []*Control
-	sentOnce bool
+	Type        NooliteDeviceType `json:"noolite_type"`
+	Error       string
+	Ch          uint8  `json:"ch"`
+	Name        string `json:"name"`
+	Address     string `json:"address"`
+	Template    string `json:"template"`
+	Controls    []*Control
+	sentOnce    bool
+	receiveOnce bool
 }
 
 // UpdateDeviceStatus Обновить органы управления
