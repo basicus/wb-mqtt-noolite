@@ -101,8 +101,8 @@ func RequestSetTemperature(ch uint8, temp uint8) *Request {
 }
 
 // RequestOn Включить устройство
-func RequestOn(ch uint8) *Request {
-	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdOn, FmtMain, [4]byte{0, 0, 0, 0}, EmptyAddress)
+func RequestOn(ch uint8, mode uint8) *Request {
+	rs, err := NewRequest(mode, CtrRequestSendCommand, ch, CmdOn, FmtMain, [4]byte{0, 0, 0, 0}, EmptyAddress)
 	if err != nil {
 		return nil
 	} else {
@@ -111,8 +111,8 @@ func RequestOn(ch uint8) *Request {
 }
 
 // RequestOff Выключить устройство
-func RequestOff(ch uint8) *Request {
-	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdOff, FmtMain, [4]byte{0, 0, 0, 0}, EmptyAddress)
+func RequestOff(ch uint8, mode uint8) *Request {
+	rs, err := NewRequest(mode, CtrRequestSendCommand, ch, CmdOff, FmtMain, [4]byte{0, 0, 0, 0}, EmptyAddress)
 	if err != nil {
 		return nil
 	} else {
@@ -232,9 +232,9 @@ func RequestMQTTCommand(ch uint8, mode uint8, params ...string) (*Request, error
 		}
 		return RequestReadState(ch, fmt), nil
 	case MQTTSetOn: // Command SetOn
-		return RequestOn(ch), nil
+		return RequestOn(ch, mode), nil
 	case MQTTSetOff: // Command SefOff
-		return RequestOff(ch), nil
+		return RequestOff(ch, mode), nil
 	case MQTTSetSwitch:
 		if len(params) == 1 {
 			status, err := strconv.Atoi(params[0])
@@ -243,9 +243,9 @@ func RequestMQTTCommand(ch uint8, mode uint8, params ...string) (*Request, error
 			}
 			switch status {
 			case 0:
-				return RequestOff(ch), nil
+				return RequestOff(ch, mode), nil
 			case 1:
-				return RequestOn(ch), nil
+				return RequestOn(ch, mode), nil
 			default:
 				return nil, errors.New("invalid switch state")
 			}

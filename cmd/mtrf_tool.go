@@ -65,9 +65,9 @@ func main() {
 	case "temperature":
 		commandRequest = nl.RequestSetTemperature(ch, temperature)
 	case "on":
-		commandRequest = nl.RequestOn(ch)
+		commandRequest = nl.RequestOn(ch, nooliteMode)
 	case "off":
-		commandRequest = nl.RequestOff(ch)
+		commandRequest = nl.RequestOff(ch, nooliteMode)
 	case "status":
 		commandRequest = nl.RequestReadState(ch, nl.FmtMain)
 	case "status_output":
