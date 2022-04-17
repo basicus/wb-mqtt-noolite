@@ -38,6 +38,8 @@ type Request struct {
 	Crc uint8
 	// SP Стоповый байт, значение 172
 	SP uint8
+	// WaitResponse Ждать ответа
+	WaitResponse bool
 }
 
 var ClearAllMemoryData = [4]byte{170, 85, 170, 85}
@@ -94,4 +96,8 @@ func (r *Request) BuildBytes() []byte {
 func (r *Request) String() string {
 	return fmt.Sprintf("Mode: %d Control: %d Command: %d Channel: %d Fmt: %d Data: %x Address: %x CRC: %d", r.Mode, r.Ctr,
 		r.Cmd, r.Ch, r.Fmt, [4]byte{r.D0, r.D1, r.D2, r.D3}, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3}, r.Crc)
+}
+
+func (r *Request) SetNeedResponse(needResponse bool) {
+	r.WaitResponse = needResponse
 }

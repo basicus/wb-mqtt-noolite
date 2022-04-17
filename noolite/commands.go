@@ -8,6 +8,7 @@ import (
 // NewRequestServiceMode Возвращет запрос для перевода адаптер в сервисный режим
 func NewRequestServiceMode() *Request {
 	rs, err := NewRequest(ModeNooliteService, CtrRequestSendCommand, 0, CmdOff, FmtMain, EmptyData, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -40,6 +41,7 @@ func RequestUnBindChannel(channel uint8, mode uint8) *Request {
 		ctr = CtrRequestClearChannel
 	}
 	rs, err := NewRequest(mode, ctr, channel, CmdUnbind, FmtMain, EmptyData, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -52,6 +54,7 @@ func RequestUnBindChannel(channel uint8, mode uint8) *Request {
 func RequestClearAllChannels(mode uint8) *Request {
 	if mode == ModeNooliteRX || mode == ModeNooliteFRX {
 		rs, err := NewRequest(mode, CtrRequestClearAllChannels, 0, CmdOff, FmtMain, ClearAllMemoryData, EmptyAddress)
+		rs.SetNeedResponse(true)
 		if err != nil {
 			return nil
 		} else {
@@ -69,6 +72,7 @@ func RequestSetSettings(channel uint8, mode uint8, settings DeviceSettings) *Req
 		return nil
 	}
 	rs, err := NewRequest(mode, CtrRequestSendCommand, channel, CmdWriteState, FmtSettings, settings.getData(), EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -83,6 +87,7 @@ func RequestGetSettings(channel uint8, mode uint8, settings DeviceSettings) *Req
 		return nil
 	}
 	rs, err := NewRequest(mode, CtrRequestSendCommand, channel, CmdReadState, FmtSettings, EmptyData, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -93,6 +98,7 @@ func RequestGetSettings(channel uint8, mode uint8, settings DeviceSettings) *Req
 // RequestSetTemperature Установка температуры srf-1-3000-t и не включать.
 func RequestSetTemperature(ch uint8, temp uint8) *Request {
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdSetBrightness, FmtSetAndDontOn, [4]byte{temp, 0, 0, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -103,6 +109,7 @@ func RequestSetTemperature(ch uint8, temp uint8) *Request {
 // RequestOn Включить устройство
 func RequestOn(ch uint8, mode uint8) *Request {
 	rs, err := NewRequest(mode, CtrRequestSendCommand, ch, CmdOn, FmtMain, [4]byte{0, 0, 0, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -113,6 +120,7 @@ func RequestOn(ch uint8, mode uint8) *Request {
 // RequestOff Выключить устройство
 func RequestOff(ch uint8, mode uint8) *Request {
 	rs, err := NewRequest(mode, CtrRequestSendCommand, ch, CmdOff, FmtMain, [4]byte{0, 0, 0, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -137,6 +145,7 @@ func RequestSetThermostatMode(ch uint8, mode uint8) *Request {
 	}
 
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdWriteState, FmtSettings, [4]byte{mode, 0, d2, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -163,6 +172,7 @@ func NewRequestSetPowerOnState(ch uint8, mode uint8) *Request {
 	}
 
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdWriteState, FmtSettings, [4]byte{settings, 0, mask, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -173,6 +183,7 @@ func NewRequestSetPowerOnState(ch uint8, mode uint8) *Request {
 // RequestReadState Чтение состояния устройства
 func RequestReadState(ch uint8, fmt uint8) *Request {
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdReadState, fmt, [4]byte{0, 0, 0, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -203,6 +214,7 @@ func RequestReadState(ch uint8, fmt uint8) *Request {
 // Example response: Mode: 2 Control: 0 Command: 130 Togl: 0 Channel: 1 Fmt: 255 Data: 00000000 Address 00018bd6 CRC 147
 func RequestReadStatOutputLoad(ch uint8) *Request {
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdReadState, 19, [4]byte{0, 0, 0, 0}, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {

@@ -139,7 +139,7 @@ func (s *Service) sendRequests() {
 
 				s.log.Debugf("[MTRF] Send request %s", request.String())
 				_, err := s.port.Write(request.BuildBytes())
-				s.isWaitingResponse = true
+				s.isWaitingResponse = request.WaitResponse
 				if err != nil {
 					s.log.Errorf("Error write serial port: %s", err)
 					return
@@ -152,6 +152,7 @@ func (s *Service) sendRequests() {
 				case <-time.After(30 * time.Second):
 					s.log.Error("[MTRF] No response. Timeout")
 				}
+				s.isWaitingResponse = false
 
 			}
 		}
@@ -168,7 +169,7 @@ func (s *Service) readResponses() {
 		_, err := io.ReadAtLeast(s.port, buf[:], PacketLen)
 
 		if s.isWaitingResponse {
-			s.log.Trace("[MTRF] Start waiting for response.")
+			s.log.Trace("[MTRF] Unblock sending new commands.")
 			s.blockSend <- struct{}{}
 		}
 

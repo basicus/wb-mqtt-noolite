@@ -8,6 +8,7 @@ type BinarySensorStatus struct {
 	// Статус
 	// Датчика протечки WS-1 . OFF (false) - протечки нет. ON (true) - протечка есть
 	// Датчика двери DS-1. OFF (false) - закрыта. ON (true) - открыта
+	// Выключатель PU212-2 OFF (false) - отключено. ON (true) - включено
 	Alarm bool
 	// Адрес устройства
 	Address [4]byte
@@ -18,7 +19,7 @@ func NewBinarySensorStatus(alarm bool, address [4]byte) *BinarySensorStatus {
 }
 
 func (ds *BinarySensorStatus) String() string {
-	return fmt.Sprintf("%s [0x%s] alarm status  %t ", ds.GetDeviceModel(), ds.GetAddress(), ds.GetOn())
+	return fmt.Sprintf("%s [0x%s] switch (alarm) status  %t ", ds.GetDeviceModel(), ds.GetAddress(), ds.GetOn())
 }
 
 func (ds *BinarySensorStatus) GetValue() string {
