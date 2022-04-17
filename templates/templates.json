@@ -70,13 +70,101 @@
         {
           "name": "model",
           "type": "text",
-          "order": 4,
+          "order": 3,
           "readonly": true
         },
         {
           "name": "address",
           "type": "text",
+          "order": 4,
+          "readonly": true
+        },
+        {
+          "name": "low_battery",
+          "type": "switch",
           "order": 5,
+          "initial_value": "0",
+          "readonly": true,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": ""
+        }
+      ]
+    },
+    {
+      "name": "ws1",
+      "controls": [
+        {
+          "name": "on",
+          "type": "switch",
+          "order": 1,
+          "initial_value": "0",
+          "readonly": true,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": ""
+        },
+        {
+          "name": "low_battery",
+          "type": "switch",
+          "order": 2,
+          "initial_value": "0",
+          "readonly": true,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": ""
+        },
+        {
+          "name": "address",
+          "type": "text",
+          "order": 5,
+          "readonly": true
+        }
+      ]
+    },
+    {
+      "name": "sl111",
+      "controls": [
+        {
+          "name": "on",
+          "type": "switch",
+          "order": 1,
+          "initial_value": "0",
+          "readonly": false,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": "SetSwitch",
+          "dont_use_retain": true
+        }
+      ]
+    },
+    {
+      "name": "pu212-2",
+      "controls": [
+        {
+          "name": "on",
+          "type": "switch",
+          "order": 1,
+          "initial_value": "0",
+          "readonly": true,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": ""
+        },
+        {
+          "name": "low_battery",
+          "type": "switch",
+          "order": 2,
+          "initial_value": "0",
+          "readonly": true,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": ""
+        },
+        {
+          "name": "address",
+          "type": "text",
+          "order": 3,
           "readonly": true
         }
       ]

@@ -1,14 +1,68 @@
 [
   {
-    "name": "Теплый пол",
+    "name": "Теплый пол Ванна",
     "noolite_type": "txf",
     "ch": 1,
     "template": "srf-1-3000-t"
   },
   {
-    "name": "Комната",
+    "name": "Теплый пол Кухня",
+    "noolite_type": "txf",
+    "ch": 2,
+    "template": "srf-1-3000-t"
+  },
+  {
+    "name": "Датчик Комната (2этаж)",
     "noolite_type": "rx",
     "ch": 4,
     "template": "pt111"
+  },
+  {
+    "name": "Датчик Ванна",
+    "noolite_type": "rx",
+    "ch": 5,
+    "template": "pt111"
+  },
+  {
+    "name": "Датчик протечки Ванна",
+    "noolite_type": "rx",
+    "ch": 6,
+    "template": "ws1"
+  },
+  {
+    "name": "Датчик протечки (Тест)",
+    "noolite_type": "rx",
+    "ch": 7,
+    "template": "ws1"
+  },
+  {
+    "name": "Теплый пол Коридор",
+    "noolite_type": "txf",
+    "ch": 8,
+    "template": "srf-1-3000-t"
+  },
+  {
+    "name": "Выключатель улица",
+    "noolite_type": "rx",
+    "ch": 10,
+    "template": "pu212-2"
+  },
+  {
+    "name": "Выключатель улица (сценарий)",
+    "noolite_type": "rx",
+    "ch": 9,
+    "template": "pu212-2"
+  },
+  {
+    "name": "Улица свет (к1)",
+    "noolite_type": "tx",
+    "ch": 11,
+    "template": "sl111"
+  },
+  {
+    "name": "Улица свет (к2)",
+    "noolite_type": "tx",
+    "ch": 12,
+    "template": "sl111"
   }
 ]

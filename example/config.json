@@ -2,6 +2,7 @@
   "serial_port": "/dev/ttyUSB0",
   "timezone": "Europe/Moscow",
   "loglevel": "trace",
+  "queue_len":1,
   "mqtt": {
     "host": "127.0.0.1",
     "port": 1883
