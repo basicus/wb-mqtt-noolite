@@ -1,0 +1,29 @@
+#!/bin/sh
+# postinst для wb-mqtt-noolite: не включает и не запускает службу автоматически,
+# так как перед первым запуском нужно отредактировать /etc/wb-mqtt-noolite.json
+# и /etc/wb-mqtt-noolite-devices.json (список устройств пуст по умолчанию).
+set -e
+
+case "$1" in
+    configure)
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl daemon-reload >/dev/null 2>&1 || true
+        fi
+        cat >&2 <<'EOF'
+
+wb-mqtt-noolite установлен, но не запущен.
+Перед запуском:
+  1. Проверьте /etc/wb-mqtt-noolite.json (порт адаптера, адрес MQTT-брокера).
+  2. Заполните /etc/wb-mqtt-noolite-devices.json списком ваших устройств Noolite
+     (см. https://github.com/basicus/wb-mqtt-noolite, раздел "Утилита mtrf_tool").
+  3. Включите и запустите службу: systemctl enable --now wb-mqtt-noolite
+
+EOF
+        ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+    *)
+        ;;
+esac
+
+exit 0

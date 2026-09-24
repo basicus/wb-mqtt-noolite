@@ -9,19 +9,26 @@ import (
 // ControlType MQTT Wirebboard типы органов управления
 type ControlType string
 
-// Wirenboard control types See full list https://github.com/wirenboard/homeui/blob/master/conventions.md
+// Wirenboard control types See full list https://github.com/wirenboard/conventions
 const (
-	WbControlTypeSwitch           ControlType = "switch"            // Possible values 0, 1
-	WbControlTypeAlarm            ControlType = "alarm"             // Possible values 0, 1
-	WbControlTypeRange            ControlType = "range"             // Possible values 0..255, min 0
-	WbControlTypeRGB              ControlType = "rgb"               // Possible values R;G;B where R,G,B 0...255
-	WbControlTypeText             ControlType = "text"              // R/O Text, anything
-	WbControlTypeGeneric          ControlType = "value"             // Generic value
-	WbControlTypeTemperature      ControlType = "temperature"       // Temperature, °C	float
-	WbControlTypeRelHumidity      ControlType = "rel_humidity"      // Relative humidity, %, RH	float, 0 - 100
-	WbControlTypePower            ControlType = "power"             // Power, watt	float
-	WbControlTypePowerConsumption ControlType = "power_consumption" // Power consumption, kWh	float
+	WbControlTypeSwitch  ControlType = "switch" // Possible values 0, 1
+	WbControlTypeAlarm   ControlType = "alarm"  // Possible values 0, 1
+	WbControlTypeRange   ControlType = "range"  // Possible values 0..255, min 0
+	WbControlTypeRGB     ControlType = "rgb"    // Possible values R;G;B where R,G,B 0...255
+	WbControlTypeText    ControlType = "text"   // R/O Text, anything
+	WbControlTypeGeneric ControlType = "value"  // Generic value, физическая величина уточняется метаключом units
+
+	// Deprecated: специфичные типы величин объявлены устаревшими в Wiren Board MQTT Conventions.
+	// Новые шаблоны должны использовать WbControlTypeGeneric + метаключ units ("deg C", "%", "W", "kWh").
+	// Константы оставлены только для чтения старых конфигураций конвертером (см. cmd/configconvert).
+	WbControlTypeTemperature      ControlType = "temperature"
+	WbControlTypeRelHumidity      ControlType = "rel_humidity"
+	WbControlTypePower            ControlType = "power"
+	WbControlTypePowerConsumption ControlType = "power_consumption"
 )
+
+// Title Локализованное название (device/control), ключи - коды языков ("en", "ru")
+type Title map[string]string
 
 // UnmarshalJSON Десериализация JSON
 func (ct *ControlType) UnmarshalJSON(b []byte) error {

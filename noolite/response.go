@@ -204,6 +204,12 @@ func (r *Response) GetDeviceState() StatusType {
 			return NewBinarySensorStatus(true, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
 		case CmdOff:
 			return NewBinarySensorStatus(false, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
+		case CmdSwitch:
+			// Кнопка пульта настроена на переключение (toggle), а не на явные on/off
+			return NewToggleStatus([4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
+		case CmdLoadPreset:
+			// Кнопка пульта настроена на вызов сценария/пресета
+			return NewPresetStatus(r.D0, [4]byte{r.ID0, r.ID1, r.ID2, r.ID3})
 		}
 	}
 	return nil

@@ -74,7 +74,9 @@ func main() {
 	}
 	serviceConfig.Tz = tzLocation
 
-	// Create new request - set adapter to Service Mode
+	// Create new request - set adapter to Service Mode. Отправляется сразу при подключении,
+	// чтобы не ждать 12 секунд, пока адаптер выйдет из режима обновления ПО (см. руководство
+	// MTRF-64-USB-A, раздел "Внимание!").
 	request := nl.NewRequestServiceMode()
 	if request == nil {
 		log.Errorf("Error when make request: %s", err)
@@ -82,6 +84,9 @@ func main() {
 
 	// Define list initializations requests on connection
 	var initialRequests []*nl.Request
+	if request != nil {
+		initialRequests = append(initialRequests, request)
+	}
 
 	// Init Noolite service (works with MTRF adapter)
 	service, err := nl.NewNooliteService(log, &serviceConfig, initialRequests)

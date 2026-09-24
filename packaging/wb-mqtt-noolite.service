@@ -1,0 +1,32 @@
+[Unit]
+Description=wb-mqtt-noolite - Noolite(-F) to MQTT bridge for Wiren Board
+After=network.target mosquitto.service
+Wants=mosquitto.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/wb-mqtt-noolite --config /etc/wb-mqtt-noolite.json
+Restart=on-failure
+RestartSec=5
+
+# Ограничение потребления ОЗУ - актуально для младших контроллеров (WB6.x, 256-512 МБ RAM).
+# GOMEMLIMIT - мягкий лимит для сборщика мусора Go (рантайм сам старается уложиться,
+# см. README, раздел "Оптимизация памяти"). MemoryMax - жесткий лимит cgroup (systemd
+# остановит процесс при превышении); берется с запасом над GOMEMLIMIT, чтобы GC успел
+# среагировать раньше OOM-killer'а. На WB6.x можно снизить оба значения, на WB7.4/8.5,
+# где памяти больше, можно увеличить или убрать вовсе.
+Environment=GOMEMLIMIT=48MiB
+MemoryMax=64M
+
+# Сервису нужен доступ к последовательному порту адаптера MTRF-64-USB-A (/dev/ttyUSB0
+# по умолчанию). Проще всего запускать от root, как задано ниже. Чтобы запускать от
+# отдельного пользователя - создайте его, добавьте в группу dialout и замените
+# "User=root" на:
+#   User=wb-mqtt-noolite
+#   SupplementaryGroups=dialout
+User=root
+
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

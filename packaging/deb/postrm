@@ -1,0 +1,22 @@
+#!/bin/sh
+# postrm для wb-mqtt-noolite: при полном удалении (purge) отключает unit systemd.
+# Конфигурационные файлы (conffiles) при purge удаляет сам dpkg - здесь это не дублируется.
+set -e
+
+case "$1" in
+    purge)
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl disable wb-mqtt-noolite >/dev/null 2>&1 || true
+        fi
+        ;;
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+    *)
+        ;;
+esac
+
+if command -v systemctl >/dev/null 2>&1; then
+    systemctl daemon-reload >/dev/null 2>&1 || true
+fi
+
+exit 0

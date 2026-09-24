@@ -14,10 +14,10 @@ type Templates struct {
 	Templates []Template `json:"templates,omitempty"`
 }
 
-func (r *Templates) FindTemplateByName(name string) ([]*Control, error) {
+func (r *Templates) FindTemplateByName(name string) (*Template, error) {
 	for _, template := range r.Templates {
 		if template.Name == name {
-			return template.Controls, nil
+			return &template, nil
 		}
 	}
 	return nil, ErrNoTemplateFound
@@ -26,6 +26,7 @@ func (r *Templates) FindTemplateByName(name string) ([]*Control, error) {
 // Template Правило. Описывает модель устройства и его органы управления.
 type Template struct {
 	Name     string     `json:"name,omitempty"`
+	Title    Title      `json:"title,omitempty"`
 	Controls []*Control `json:"controls"`
 }
 

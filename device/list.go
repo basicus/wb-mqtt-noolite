@@ -71,7 +71,7 @@ func (l *List) InitNoolite(service *noolite.Service) {
 				}
 				if err == nil && device != nil {
 					//Device found. Publish it state
-					device.Error = "No response or not found"
+					device.Error = ErrorRead
 					l.log.Tracef("Updating device state. Enqueue it for update")
 					l.publishQueue.Enqueue(device)
 				}
@@ -139,7 +139,7 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 							} else {
 								retainValue = false
 							}
-							if (newValue || retainValue) && !control.dontUseRetain {
+							if (newValue || retainValue) && !control.DontUseRetain {
 								control.Value = r.Payload
 								if !control.Readonly && control.SetCommand != "" {
 									l.log.Tracef("Found control for send to Noolite device: %+v", control)
@@ -228,17 +228,18 @@ func (l *List) InitDeviceTemplates() error {
 		return ErrDeviceTemplateIsNil
 	}
 	for _, device := range l.devices {
-		controls, err := l.templates.FindTemplateByName(device.Template)
+		template, err := l.templates.FindTemplateByName(device.Template)
 		if err != nil {
 			return err
 		}
 		var cp []*Control
-		for _, c := range controls {
+		for _, c := range template.Controls {
 			newControl := &Control{}
 			copier.Copy(newControl, c)
 			cp = append(cp, newControl)
 		}
 		device.Controls = cp
+		device.SetTemplateTitle(template.Title)
 	}
 	return nil
 }

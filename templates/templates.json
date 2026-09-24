@@ -2,10 +2,18 @@
   "templates": [
     {
       "name": "srf-1-3000-t",
+      "title": {
+        "en": "SRF-1-3000-T thermostat",
+        "ru": "Термостат SRF-1-3000-T"
+      },
       "controls": [
         {
           "name": "on",
           "type": "switch",
+          "title": {
+            "en": "Heating",
+            "ru": "Нагрев"
+          },
           "order": 1,
           "initial_value": "0",
           "readonly": false,
@@ -14,8 +22,12 @@
           "set_command": "SetSwitch"
         },
         {
-          "name": "setting",
+          "name": "setpoint_t_ambient",
           "type": "range",
+          "title": {
+            "en": "Setpoint Temperature",
+            "ru": "Заданная температура"
+          },
           "order": 2,
           "min": 5,
           "max": 30,
@@ -25,8 +37,13 @@
           "set_command": "SetTemperature"
         },
         {
-          "name": "value",
-          "type": "temperature",
+          "name": "temperature",
+          "type": "value",
+          "units": "deg C",
+          "title": {
+            "en": "Temperature",
+            "ru": "Температура"
+          },
           "order": 3,
           "readonly": true,
           "initial_value": "",
@@ -39,12 +56,20 @@
         {
           "name": "model",
           "type": "text",
+          "title": {
+            "en": "Model",
+            "ru": "Модель"
+          },
           "order": 4,
           "readonly": true
         },
         {
           "name": "address",
           "type": "text",
+          "title": {
+            "en": "Address",
+            "ru": "Адрес"
+          },
           "order": 5,
           "readonly": true
         }
@@ -52,17 +77,31 @@
     },
     {
       "name": "pt111",
+      "title": {
+        "en": "PT111 temperature/humidity sensor",
+        "ru": "Датчик температуры/влажности PT111"
+      },
       "controls": [
         {
           "name": "temperature",
-          "type": "temperature",
+          "type": "value",
+          "units": "deg C",
+          "title": {
+            "en": "Temperature",
+            "ru": "Температура"
+          },
           "order": 1,
           "readonly": true,
           "initial_value": ""
         },
         {
           "name": "humidity",
-          "type": "rel_humidity",
+          "type": "value",
+          "units": "%",
+          "title": {
+            "en": "Humidity",
+            "ru": "Влажность"
+          },
           "order": 2,
           "readonly": true,
           "initial_value": ""
@@ -70,18 +109,30 @@
         {
           "name": "model",
           "type": "text",
+          "title": {
+            "en": "Model",
+            "ru": "Модель"
+          },
           "order": 3,
           "readonly": true
         },
         {
           "name": "address",
           "type": "text",
+          "title": {
+            "en": "Address",
+            "ru": "Адрес"
+          },
           "order": 4,
           "readonly": true
         },
         {
-          "name": "low_battery",
-          "type": "switch",
+          "name": "alarm_low_battery",
+          "type": "alarm",
+          "title": {
+            "en": "Low Battery",
+            "ru": "Низкий заряд батареи"
+          },
           "order": 5,
           "initial_value": "0",
           "readonly": true,
@@ -93,10 +144,18 @@
     },
     {
       "name": "ws1",
+      "title": {
+        "en": "WS1 water leak sensor",
+        "ru": "Датчик протечки воды WS1"
+      },
       "controls": [
         {
           "name": "on",
           "type": "switch",
+          "title": {
+            "en": "Leak Detected",
+            "ru": "Обнаружена протечка"
+          },
           "order": 1,
           "initial_value": "0",
           "readonly": true,
@@ -105,8 +164,12 @@
           "set_command": ""
         },
         {
-          "name": "low_battery",
-          "type": "switch",
+          "name": "alarm_low_battery",
+          "type": "alarm",
+          "title": {
+            "en": "Low Battery",
+            "ru": "Низкий заряд батареи"
+          },
           "order": 2,
           "initial_value": "0",
           "readonly": true,
@@ -117,6 +180,10 @@
         {
           "name": "address",
           "type": "text",
+          "title": {
+            "en": "Address",
+            "ru": "Адрес"
+          },
           "order": 5,
           "readonly": true
         }
@@ -124,10 +191,18 @@
     },
     {
       "name": "sl111",
+      "title": {
+        "en": "SL111 remote-controlled switch",
+        "ru": "Выключатель SL111"
+      },
       "controls": [
         {
           "name": "on",
           "type": "switch",
+          "title": {
+            "en": "Switch",
+            "ru": "Выключатель"
+          },
           "order": 1,
           "initial_value": "0",
           "readonly": false,
@@ -140,10 +215,18 @@
     },
     {
       "name": "pu212-2",
+      "title": {
+        "en": "PU212-2 remote control",
+        "ru": "Пульт управления PU212-2"
+      },
       "controls": [
         {
           "name": "on",
           "type": "switch",
+          "title": {
+            "en": "Switch",
+            "ru": "Выключатель"
+          },
           "order": 1,
           "initial_value": "0",
           "readonly": true,
@@ -152,9 +235,27 @@
           "set_command": ""
         },
         {
-          "name": "low_battery",
-          "type": "switch",
+          "name": "alarm_low_battery",
+          "type": "alarm",
+          "title": {
+            "en": "Low Battery",
+            "ru": "Низкий заряд батареи"
+          },
           "order": 2,
+          "initial_value": "0",
+          "readonly": true,
+          "onstart_command": "",
+          "get_command": "",
+          "set_command": ""
+        },
+        {
+          "name": "preset",
+          "type": "value",
+          "title": {
+            "en": "Scene",
+            "ru": "Сценарий"
+          },
+          "order": 3,
           "initial_value": "0",
           "readonly": true,
           "onstart_command": "",
@@ -164,7 +265,11 @@
         {
           "name": "address",
           "type": "text",
-          "order": 3,
+          "title": {
+            "en": "Address",
+            "ru": "Адрес"
+          },
+          "order": 4,
           "readonly": true
         }
       ]

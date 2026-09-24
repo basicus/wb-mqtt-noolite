@@ -1,0 +1,15 @@
+{
+  "serial_port": "/dev/ttyUSB0",
+  "timezone": "Europe/Moscow",
+  "loglevel": "info",
+  "mqtt": {
+    "host": "127.0.0.1",
+    "port": 1883,
+    "username": "",
+    "password": ""
+  },
+  "device_config": {
+    "templates": "/etc/wb-mqtt-noolite-templates.json",
+    "devices": "/etc/wb-mqtt-noolite-devices.json"
+  }
+}

@@ -14,3 +14,6 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 .idea/
+
+# Makefile cross-compile output (make armv5/armv7/arm64/all)
+/build/

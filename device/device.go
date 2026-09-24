@@ -1,6 +1,7 @@
 package device
 
 import (
+	"encoding/json"
 	"fmt"
 	"wb-noolite-mtrf/mqtt"
 	"wb-noolite-mtrf/noolite"
@@ -8,24 +9,45 @@ import (
 
 // Device Описание устройства с которым будем работать
 type Device struct {
-	Type        NooliteDeviceType `json:"noolite_type"`
-	Error       string
-	Ch          uint8  `json:"ch"`
-	Name        string `json:"name"`
-	Address     string `json:"address"`
-	Template    string `json:"template"`
-	Controls    []*Control
-	sentOnce    bool
-	receiveOnce bool
+	Type     NooliteDeviceType `json:"noolite_type"`
+	Error    string            `json:"-"`
+	Ch       uint8             `json:"ch"`
+	Name     string            `json:"name"`
+	Address  string            `json:"address,omitempty"`
+	Template string            `json:"template"`
+	Controls []*Control        `json:"-"`
+	// templateTitle Название модели устройства (en/ru) из шаблона, см. InitDeviceTemplates.
+	// Используется как meta/title, если пользователь не задал собственное Name.
+	templateTitle Title
+	sentOnce      bool
+	hadError      bool
+	receiveOnce   bool
+}
+
+// deviceMeta JSON тела топика /devices/<id>/meta, см. Wiren Board MQTT Conventions
+type deviceMeta struct {
+	Driver string `json:"driver"`
+	Title  Title  `json:"title,omitempty"`
+}
+
+// SetTemplateTitle Задает название модели устройства из шаблона (см. List.InitDeviceTemplates)
+func (d *Device) SetTemplateTitle(title Title) {
+	d.templateTitle = title
+}
+
+// title Название устройства для meta/title: пользовательское Name (если задано) или название модели из шаблона
+func (d *Device) title() Title {
+	if d.Name != "" {
+		return Title{"en": d.Name, "ru": d.Name}
+	}
+	return d.templateTitle
 }
 
 // UpdateDeviceStatus Обновить органы управления
 func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 	var updated int
-	// Сброс ошибки
-	if d.Error != "" {
-		d.Error = "ok"
-	}
+	// Сброс ошибки: устройство ответило, значит связь восстановлена
+	d.Error = ""
 	switch v := ds.(type) {
 	case *noolite.DeviceMainStatus:
 		for _, control := range d.Controls {
@@ -39,7 +61,7 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 					control.Value = MQTTSwitchOff
 					updated++
 				}
-			case ControlValue:
+			case ControlTemperature:
 				control.Value = v.GetValue()
 				updated++
 			case ControlAddress:
@@ -104,6 +126,26 @@ func (d *Device) UpdateDeviceStatus(ds noolite.StatusType) bool {
 				}
 			}
 		}
+	case *noolite.ToggleStatus:
+		// Кнопка пульта настроена на переключение (CMD Switch) - целевое состояние не передается,
+		// поэтому инвертируем текущее значение канала ControlStatus
+		for _, control := range d.Controls {
+			if control.Name == ControlStatus {
+				if control.Value == MQTTSwitchOn {
+					control.Value = MQTTSwitchOff
+				} else {
+					control.Value = MQTTSwitchOn
+				}
+				updated++
+			}
+		}
+	case *noolite.PresetStatus:
+		for _, control := range d.Controls {
+			if control.Name == ControlPreset {
+				control.Value = v.GetValue()
+				updated++
+			}
+		}
 
 	default:
 		panic("Cant update unknown type")
@@ -130,32 +172,37 @@ func (d *Device) GenerateMQTTPacket(prefix string) *mqtt.Packet {
 
 	var deviceId = d.GetDeviceId(prefix)
 	if !d.sentOnce {
-		if d.Name != "" {
-			topics.Add(&mqtt.Message{
-				Topic:   deviceId + "meta/name",
-				Retain:  true,
-				Payload: d.Name,
-			})
+		meta := deviceMeta{
+			Driver: DriverName,
+			Title:  d.title(),
 		}
-		if d.Address != "" {
+		payload, err := json.Marshal(meta)
+		if err == nil {
 			topics.Add(&mqtt.Message{
-				Topic:   deviceId + "meta/address",
+				Topic:   deviceId + "meta",
 				Retain:  true,
-				Payload: d.Address,
+				Payload: string(payload),
 			})
 		}
 		d.sentOnce = true
 	}
 
+	// meta/error ретейнится, чтобы новые подписчики видели актуальное состояние ошибки;
+	// пустой payload снимает ранее опубликованный флаг (см. ErrorRead/ErrorWrite/ErrorPoll)
 	if d.Error != "" {
-		if d.Error == "ok" {
-			d.Error = ""
-		}
 		topics.Add(&mqtt.Message{
 			Topic:   deviceId + "meta/error",
-			Retain:  false,
+			Retain:  true,
 			Payload: d.Error,
 		})
+		d.hadError = true
+	} else if d.hadError {
+		topics.Add(&mqtt.Message{
+			Topic:   deviceId + "meta/error",
+			Retain:  true,
+			Payload: "",
+		})
+		d.hadError = false
 	}
 
 	if d.Error == "" {

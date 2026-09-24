@@ -19,12 +19,19 @@ func NewRequestServiceMode() *Request {
 // RequestBindChannel Запрос ручной привязки устройства mode
 // channel - ячейка памяти
 // mode - режим ModeNooliteTX, ModeNooliteFTX, ModeNooliteRX, ModeNooliteFRX
+//
+// Для TX/FTX (силовой блок) адаптер передает команду Bind самому устройству (см. руководство
+// MTRF-64-USB-A §5.1) - устройство должно быть предварительно переведено в режим привязки.
+// Для RX/FRX (выключатели, пульты, датчики) адаптер включает прослушивание канала на 40 секунд
+// (CTR = 3, см. §5.3) - в это время на привязываемом устройстве нужно нажать его собственную
+// сервисную кнопку/комбинацию (см. инструкцию на изделие).
 func RequestBindChannel(channel uint8, mode uint8) *Request {
 	var ctr = CtrRequestSendCommand
-	if mode == ModeNooliteRX {
+	if mode == ModeNooliteRX || mode == ModeNooliteFRX {
 		ctr = CtrRequestBindEnable
 	}
 	rs, err := NewRequest(mode, ctr, channel, CmdBind, FmtMain, EmptyData, EmptyAddress)
+	rs.SetNeedResponse(true)
 	if err != nil {
 		return nil
 	} else {
@@ -35,9 +42,13 @@ func RequestBindChannel(channel uint8, mode uint8) *Request {
 // RequestUnBindChannel Запрос ручной отвязки устройства
 // channel - ячейка памяти
 // mode - режим ModeNooliteTX, ModeNooliteFTX, ModeNooliteRX, ModeNooliteFRX
+//
+// Для TX/FTX команда Unbind передается самому устройству (см. §6.1/§6.2, требует подтверждения
+// сервисной кнопкой на устройстве). Для RX/FRX ячейка канала просто очищается на адаптере
+// (CTR = 5, см. §6.4) - подтверждение со стороны устройства не требуется.
 func RequestUnBindChannel(channel uint8, mode uint8) *Request {
 	var ctr = CtrRequestSendCommand
-	if mode == ModeNooliteRX {
+	if mode == ModeNooliteRX || mode == ModeNooliteFRX {
 		ctr = CtrRequestClearChannel
 	}
 	rs, err := NewRequest(mode, ctr, channel, CmdUnbind, FmtMain, EmptyData, EmptyAddress)
@@ -194,23 +205,23 @@ func RequestReadState(ch uint8, fmt uint8) *Request {
 // RequestReadStatOutputLoad Получение данных с выхода для нагрузки устройства
 // Пакеты данных:
 //
-//Байт:	                ST	MODE	CTR	RES	CH	CMD	FMT	D0	D1	D2	D3	ID0	ID1	ID2	ID3	CRC	SP
-//Передача (17 байт):	171  2	    9	0	0	128	19	0	0	0	0	id0	id1	id2	id3	crc	172
-//Прием (17 байт):	    173  2      ctr	0	0	130	19	d0	d1	0	0	id0	id1	id2	id3	crc	174
-//параметры пакетов:
+// Байт:	                ST	MODE	CTR	RES	CH	CMD	FMT	D0	D1	D2	D3	ID0	ID1	ID2	ID3	CRC	SP
+// Передача (17 байт):	171  2	    9	0	0	128	19	0	0	0	0	id0	id1	id2	id3	crc	172
+// Прием (17 байт):	    173  2      ctr	0	0	130	19	d0	d1	0	0	id0	id1	id2	id3	crc	174
+// параметры пакетов:
 //
-//ctr = 0 – код ответа:
+// ctr = 0 – код ответа:
 //
-//ctr	код ответа
-//0	команда выполнена
-//1	нет ответа от блока
-//2	ошибка во время выполнения
-//3	привязка выполнена
-//d0 = 0..255 – текущая мощность (яркость) на нагрузке устройства;
-//d1 = 0..255 – мощность (яркость) на которую будет включена нагрузка устройства;
-//id0, id1, id2, id3 – ID (адрес) устройства в системе nooLite-F, 0-ой, 1-ый, 2-ой и 3-ий байты адреса соответственно, например: 1, 171, 205, 139;
+// ctr	код ответа
+// 0	команда выполнена
+// 1	нет ответа от блока
+// 2	ошибка во время выполнения
+// 3	привязка выполнена
+// d0 = 0..255 – текущая мощность (яркость) на нагрузке устройства;
+// d1 = 0..255 – мощность (яркость) на которую будет включена нагрузка устройства;
+// id0, id1, id2, id3 – ID (адрес) устройства в системе nooLite-F, 0-ой, 1-ый, 2-ой и 3-ий байты адреса соответственно, например: 1, 171, 205, 139;
 //
-//crc – контрольная сумма, младший байт от суммы первых 15 байт (ST..ID3).
+// crc – контрольная сумма, младший байт от суммы первых 15 байт (ST..ID3).
 // Example response: Mode: 2 Control: 0 Command: 130 Togl: 0 Channel: 1 Fmt: 255 Data: 00000000 Address 00018bd6 CRC 147
 func RequestReadStatOutputLoad(ch uint8) *Request {
 	rs, err := NewRequest(ModeNooliteFTX, CtrRequestSendCommand, ch, CmdReadState, 19, [4]byte{0, 0, 0, 0}, EmptyAddress)
