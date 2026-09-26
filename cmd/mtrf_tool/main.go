@@ -180,8 +180,10 @@ func main() {
 	<-wait
 }
 
-// waitForBindResult Дожидается ответа адаптера с подтверждением привязки (CTR = Bind Success,
-// см. руководство MTRF-64-USB-A §5.1/§5.3) и печатает готовый фрагмент для devices.json.
+// waitForBindResult Дожидается ответа адаптера с подтверждением привязки и печатает готовый
+// фрагмент для devices.json. Подтверждение приходит как обычный успешный ответ на команду Bind
+// (CTR = Success, CMD = Bind, см. руководство MTRF-64-USB-A §5.1/§5.3 и response_test.go) - оно
+// НЕ использует CtrResponseBindSuccess, тот код относится только к ответам на CmdReadStatOutputLoad.
 // Если подтверждение не пришло за bindTimeout - выводит сообщение об ошибке и завершает работу.
 func waitForBindResult(log *logrus.Logger, service *nl.Service, ch uint8, mode string) {
 	timeout := time.After(bindTimeout)
@@ -189,7 +191,7 @@ func waitForBindResult(log *logrus.Logger, service *nl.Service, ch uint8, mode s
 		select {
 		case r := <-service.Receive():
 			log.Infof("<-- %s", r.String())
-			if r.Ctr == nl.CtrResponseBindSuccess && r.Ch == ch {
+			if r.Cmd == nl.CmdBind && r.Ctr == nl.CtrResponseSuccess && r.Ch == ch {
 				printDeviceConfigSnippet(ch, mode, r)
 				return
 			}

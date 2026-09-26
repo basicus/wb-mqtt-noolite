@@ -3,9 +3,6 @@ package device
 import (
 	"encoding/json"
 	"errors"
-	"github.com/go-co-op/gocron"
-	"github.com/jinzhu/copier"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -15,6 +12,10 @@ import (
 	"wb-noolite-mtrf/config"
 	"wb-noolite-mtrf/mqtt"
 	"wb-noolite-mtrf/noolite"
+
+	"github.com/go-co-op/gocron"
+	"github.com/jinzhu/copier"
+	"github.com/sirupsen/logrus"
 )
 
 var ErrDeviceNotFound = errors.New("device not found")
@@ -85,10 +86,9 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 	l.publishQueue = NewPublishQueue(l.mqtt, l.log, l.config)
 	go func() {
 		<-time.After(l.config.Mqtt.PublishNewDeviceDelay)
-		// Scan for Noolite TX Devices for publish to mqtt info about it
 		for _, device := range l.devices {
-			if device.Type.GetMode() == noolite.ModeNooliteTX && !device.receiveOnce {
-				l.log.Tracef("Send TX device init to MQTT: %+v", device)
+			if !device.receiveOnce {
+				l.log.Tracef("Send device init to MQTT: %+v", device)
 				l.publishQueue.Enqueue(device)
 			}
 		}
@@ -276,7 +276,7 @@ func (l *List) InitDeviceScheduler() error {
 	}
 
 	l.log.Infof("Scheduled %d jobs", len(l.cron.Jobs()))
-	l.cron.SingletonMode()
+	l.cron.SingletonModeAll()
 	l.cron.StartAsync()
 	l.log.Infof("Crontab jobs started")
 	return nil
