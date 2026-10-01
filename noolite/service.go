@@ -42,6 +42,7 @@ func NewNooliteService(log *logrus.Logger, config *config.Config, initialRequest
 		sndQueue:              make(chan *Request, config.QueueLen),
 		rcvQueue:              make(chan *Response, config.QueueLen),
 		blockSend:             make(chan struct{}, 1),
+		exit:                  make(chan struct{}),
 		sendRequestsOnConnect: initialRequests,
 	}
 	go s.worker()
@@ -54,13 +55,14 @@ func NewNooliteService(log *logrus.Logger, config *config.Config, initialRequest
 // Close Закрывает порт, закрывает каналы
 func (s *Service) Close() {
 	s.closeOnce.Do(func() {
-
-		err := s.port.Close()
-		if err != nil {
-			s.log.Errorf("[MTRF] Error on close service: %s", err)
+		// Сначала сигнализируем горутинам о завершении, чтобы они не пытались переподключиться
+		close(s.exit)
+		if s.port == nil {
 			return
 		}
-		close(s.exit)
+		if err := s.port.Close(); err != nil {
+			s.log.Errorf("[MTRF] Error on close service: %s", err)
+		}
 	})
 }
 
