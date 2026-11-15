@@ -336,7 +336,7 @@ Power units (relays, dimmers, the SRF-1-3000-T thermostat, etc.) are actuators c
    ```shell
    ./mtrf_tool -d /dev/ttyUSB0 -c 1 -m txf --command bind
    ```
-3. Successful pairing is indicated by the unit's LED turning off; `mtrf_tool`'s log will show the adapter's response with `CTR=3` ("pairing successful") and, for nooLite-F, the device's 32-bit address.
+3. Successful pairing is indicated by the unit's LED turning off. With nooLite-F (`txf`) the unit confirms pairing itself: the response carries its 32-bit address. Classic nooLite (`tx`) is one-way — the unit sends nothing back, and the response seen in the log comes from the adapter and only means the command was transmitted. So for `tx`, check the result by the unit's LED and with `--command on` / `--command off`; no address goes into the snippet.
 4. Once pairing is confirmed, `mtrf_tool` prints a ready-made `devices.json` fragment — just copy it and fill in `name` (the nooLite-F address is already filled in, and `template` is auto-filled when the device model is recognized):
    ```json
    {

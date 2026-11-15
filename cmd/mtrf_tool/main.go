@@ -213,16 +213,32 @@ func printDeviceConfigSnippet(ch uint8, mode string, r *nl.Response) {
 		Template: "TODO",
 	}
 
-	if address := r.GetAddress(); address != "00000000" {
-		dev.Address = address
-		if template, ok := suggestedTemplates[nl.NewDeviceModel(r.D0)]; ok {
-			dev.Template = template
-			fmt.Printf("\nПривязка выполнена. Модель устройства определена автоматически: %s (проверьте template).\n", template)
+	switch dev.Type {
+	case device.TypeTxF, device.TypeRxF:
+		// nooLite-F: ответ несет адрес самого устройства, а для силовых блоков - и модель (D0)
+		if address := r.GetAddress(); address != "00000000" {
+			dev.Address = address
+			if template, ok := suggestedTemplates[nl.NewDeviceModel(r.D0)]; ok {
+				dev.Template = template
+				fmt.Printf("\nПривязка выполнена. Модель устройства определена автоматически: %s (проверьте template).\n", template)
+			} else {
+				fmt.Printf("\nПривязка выполнена. Модель устройства определить не удалось (D0=%d) - укажите template вручную.\n", r.D0)
+			}
 		} else {
-			fmt.Printf("\nПривязка выполнена. Модель устройства определить не удалось (D0=%d) - укажите template вручную.\n", r.D0)
+			fmt.Println("\nПривязка выполнена.")
 		}
-	} else {
-		fmt.Println("\nПривязка выполнена.")
+	case device.TypeTx:
+		// Классический nooLite однонаправленный: силовой блок ничего не отвечает. Ответ пришел
+		// от самого адаптера и означает только, что команда передана в эфир. Поле адреса в нем
+		// к блоку не относится, поэтому в сниппет не попадает.
+		fmt.Println("\nКоманда привязки передана в эфир. Классический nooLite (tx) не подтверждает привязку,")
+		fmt.Println("поэтому ее результат утилите неизвестен. Проверьте привязку по индикатору силового блока")
+		fmt.Printf("и командами: mtrf_tool --mode=tx --channel=%d --command=on (затем --command=off).\n", ch)
+		fmt.Println("Модель устройства по протоколу не передается - укажите template вручную (например, sl111).")
+	default:
+		// rx: адаптер принял команду привязки от самого устройства, подтверждение настоящее,
+		// но адрес и модель в классическом nooLite не передаются.
+		fmt.Println("\nПривязка выполнена. Модель устройства по протоколу nooLite не передается - укажите template вручную.")
 	}
 
 	out, err := json.MarshalIndent(&dev, "", "  ")
