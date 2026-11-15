@@ -54,7 +54,7 @@ func (l *List) InitNoolite(service *noolite.Service) {
 				var device *Device
 				device, err := l.FindByAddress(r.GetAddress())
 				if err != nil {
-					device, err = l.FindByChannel(r.Ch)
+					device, err = l.FindByChannel(r.Ch, r.Mode)
 				}
 				if err == nil && device != nil {
 					//Found device state for device. Publish it state
@@ -68,7 +68,7 @@ func (l *List) InitNoolite(service *noolite.Service) {
 				var device *Device
 				device, err := l.FindByAddress(r.GetAddress())
 				if err != nil {
-					device, err = l.FindByChannel(r.Ch)
+					device, err = l.FindByChannel(r.Ch, r.Mode)
 				}
 				if err == nil && device != nil {
 					//Device found. Publish it state
@@ -108,7 +108,7 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 
 				if len(found) >= 1 && len(found[0]) == 4 {
 					// 0 - all, 1 - noolite (txf, tx, rx, rxf), 2 - address or channel, 3 control
-					//nooliteMode := found[0][1]
+					nooliteType := NooliteDeviceType(found[0][1])
 					address := found[0][2]
 					controlName := found[0][3]
 
@@ -120,7 +120,7 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 						if err != nil {
 							continue
 						}
-						device, _ = l.FindByChannel(uint8(ch))
+						device, _ = l.FindByChannel(uint8(ch), nooliteType.GetMode())
 					}
 
 					if device != nil {
@@ -139,7 +139,9 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 							} else {
 								retainValue = false
 							}
-							if (newValue || retainValue) && !control.DontUseRetain {
+							// DontUseRetain отсекает только восстановление из ретейна после переподключения,
+							// команды из топика /on должны отправляться всегда.
+							if newValue || (retainValue && !control.DontUseRetain) {
 								control.Value = r.Payload
 								if !control.Readonly && control.SetCommand != "" {
 									l.log.Tracef("Found control for send to Noolite device: %+v", control)
@@ -170,10 +172,12 @@ func (l *List) InitMQTT(connector *mqtt.Connector) {
 	}()
 }
 
-// FindByChannel Найти устройство по каналу
-func (l *List) FindByChannel(ch uint8) (*Device, error) {
+// FindByChannel Найти устройство по каналу и режиму MTRF. Каналы в режимах TX, TX-F, RX и RX-F
+// независимы (у адаптера отдельные ячейки памяти для каждого режима), поэтому один и тот же
+// номер канала может принадлежать разным устройствам - сравнивать нужно оба поля.
+func (l *List) FindByChannel(ch uint8, mode uint8) (*Device, error) {
 	for _, device := range l.devices {
-		if device.Ch == ch {
+		if device.Ch == ch && device.Type.GetMode() == mode {
 			return device, nil
 		}
 	}
